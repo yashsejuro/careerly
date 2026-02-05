@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useAuth } from '@/lib/auth'
-import { careerlyApi } from '@/lib/api'
+import { supabase } from '@/lib/supabaseClient'
 import { 
   Plus, 
   Search, 
@@ -43,7 +43,7 @@ interface Internship {
   company: string
   position: string
   status: Status
-  appliedDate: string
+  applied_date: string
   notes?: string
 }
 
@@ -54,7 +54,7 @@ export function TrackerView() {
   const [search, setSearch] = useState('')
   const [isAddOpen, setIsAddOpen] = useState(false)
   
-  const [newInternship, setNewInternship] = useState<Partial<Internship>>({
+  const [newInternship, setNewInternship] = useState<Partial<Internship & { appliedDate: string }>>({
     status: 'Interested',
     appliedDate: new Date().toISOString().split('T')[0]
   })
@@ -67,13 +67,17 @@ export function TrackerView() {
     if (!user) return
     setLoading(true)
     try {
-      const data = await careerlyApi.db.internships.list({
-        where: { userId: user.id },
-        orderBy: { createdAt: 'desc' }
-      })
-      setInternships(data as Internship[])
+      const { data, error } = await supabase
+        .from('internships')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      setInternships((data as Internship[]) ?? [])
     } catch (error) {
       console.error('Error fetching internships:', error)
+      toast.error('Failed to load internships')
     } finally {
       setLoading(false)
     }
@@ -85,11 +89,16 @@ export function TrackerView() {
       return
     }
     try {
-      await careerlyApi.db.internships.create({
-        userId: user.id,
-        ...newInternship,
-        createdAt: new Date().toISOString()
+      const { error } = await supabase.from('internships').insert({
+        user_id: user.id,
+        company: newInternship.company,
+        position: newInternship.position,
+        status: newInternship.status,
+        applied_date: newInternship.appliedDate,
+        notes: newInternship.notes ?? null,
       })
+      
+      if (error) throw error
       toast.success('Internship added!')
       setIsAddOpen(false)
       setNewInternship({
@@ -105,7 +114,12 @@ export function TrackerView() {
 
   const handleDelete = async (id: string) => {
     try {
-      await careerlyApi.db.internships.delete(id)
+      const { error } = await supabase
+        .from('internships')
+        .delete()
+        .eq('id', id)
+      
+      if (error) throw error
       toast.success('Internship deleted')
       fetchInternships()
     } catch (error) {
@@ -251,7 +265,7 @@ export function TrackerView() {
                   <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="w-4 h-4" />
-                      <span>{format(new Date(internship.appliedDate), 'MMM d, yyyy')}</span>
+                      <span>{format(new Date(internship.applied_date), 'MMM d, yyyy')}</span>
                     </div>
                     
                     <div className={`px-4 py-1.5 rounded-full text-xs font-bold border ${statusColors[internship.status]}`}>

@@ -1,10 +1,36 @@
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useAuth } from '@/lib/auth'
 import { ArrowRight, Compass, Target, Rocket, ClipboardCheck } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export function LandingPage() {
-  const { login } = useAuth()
-  const handleLogin = () => login()
+  const { loginWithEmail } = useAuth()
+  const [isLoginOpen, setIsLoginOpen] = useState(false)
+  const [email, setEmail] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleLogin = async () => {
+    if (!email || !email.includes('@')) {
+      toast.error('Please enter a valid email address')
+      return
+    }
+    setIsLoading(true)
+    try {
+      await loginWithEmail(email)
+      toast.success('Check your email for the login link!')
+      setIsLoginOpen(false)
+      setEmail('')
+    } catch (error) {
+      console.error('Login error:', error)
+      toast.error('Failed to send login email')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background selection:bg-primary/20">
@@ -17,7 +43,7 @@ export function LandingPage() {
             </div>
             <span className="text-xl font-serif font-bold tracking-tight">Career Navigator</span>
           </div>
-          <Button onClick={handleLogin} variant="ghost" className="font-medium">
+          <Button onClick={() => setIsLoginOpen(true)} variant="ghost" className="font-medium">
             Sign In
           </Button>
         </div>
@@ -35,7 +61,7 @@ export function LandingPage() {
               Empowering college students to reach their full professional potential.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button onClick={handleLogin} size="lg" className="h-14 px-8 text-lg rounded-full shadow-lg hover:scale-105 transition-transform">
+              <Button onClick={() => setIsLoginOpen(true)} size="lg" className="h-14 px-8 text-lg rounded-full shadow-lg hover:scale-105 transition-transform">
                 Get Started for Free <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </div>
@@ -81,6 +107,37 @@ export function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Email Login Dialog */}
+      <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
+        <DialogContent className="rounded-3xl max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Sign In</DialogTitle>
+            <DialogDescription>
+              Enter your email address and we'll send you a magic link to sign in.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleLogin} disabled={isLoading} className="w-full rounded-xl">
+              {isLoading ? 'Sending...' : 'Send Magic Link'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Footer */}
       <footer className="py-12 border-t">
