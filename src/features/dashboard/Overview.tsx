@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth'
-import { careerlyApi } from '@/lib/api'
+import { supabase } from '@/lib/supabaseClient'
 import { Map, Target, Rocket, ChevronRight, Sparkles, Trophy } from 'lucide-react'
 
 export function Overview({ setActiveView }: { setActiveView: (view: any) => void }) {
@@ -13,12 +13,17 @@ export function Overview({ setActiveView }: { setActiveView: (view: any) => void
   useEffect(() => {
     async function fetchData() {
       if (!user) return
-      const [p, count] = await Promise.all([
-        careerlyApi.db.profiles.list({ where: { userId: user.id }, limit: 1 }),
-        careerlyApi.db.internships.count({ where: { userId: user.id } })
+      const [pResult, iResult] = await Promise.all([
+        supabase.from('profiles').select('*').eq('user_id', user.id).limit(1),
+        supabase
+          .from('internships')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id),
       ])
-      if (p.length > 0) setProfile(p[0])
-      setInternshipCount(count)
+
+      const profileRows = pResult.data ?? []
+      if (profileRows.length > 0) setProfile(profileRows[0])
+      setInternshipCount(iResult.count ?? 0)
     }
     fetchData()
   }, [user])
@@ -73,7 +78,7 @@ export function Overview({ setActiveView }: { setActiveView: (view: any) => void
             <div className="grid grid-cols-2 gap-4">
               <ProfileItem label="Degree" value={profile?.degree || 'Not set'} />
               <ProfileItem label="Current Year" value={profile?.year || 'Not set'} />
-              <ProfileItem label="Target Role" value={profile?.goalCareer || 'Not set'} />
+              <ProfileItem label="Target Role" value={profile?.goal_career || 'Not set'} />
               <ProfileItem label="Experience" value="Beginner" />
             </div>
             <div className="pt-4 border-t">
@@ -103,7 +108,7 @@ export function Overview({ setActiveView }: { setActiveView: (view: any) => void
           <CardContent className="space-y-4">
             <div className="p-4 bg-background/50 rounded-2xl border border-primary/10">
               <p className="text-sm leading-relaxed italic text-foreground/90">
-                "Given your interest in {profile?.interests || 'tech'}, consider learning Docker next. It's a highly requested skill for {profile?.goalCareer || 'modern developers'} and will make your portfolio projects much more professional."
+                "Given your interest in {profile?.interests || 'tech'}, consider learning Docker next. It's a highly requested skill for {profile?.goal_career || 'modern developers'} and will make your portfolio projects much more professional."
               </p>
             </div>
             <div className="space-y-3">

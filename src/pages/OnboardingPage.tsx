@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { careerlyApi } from '@/lib/api'
+import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/lib/auth'
 import { Compass, Sparkles, ChevronRight, ChevronLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -31,11 +31,15 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
     if (!user) return
     setLoading(true)
     try {
-      await careerlyApi.db.profiles.create({
-        userId: user.id,
-        ...formData,
-        createdAt: new Date().toISOString()
+      const { error } = await supabase.from('profiles').insert({
+        user_id: user.id,
+        degree: formData.degree,
+        year: formData.year,
+        skills: formData.skills,
+        interests: formData.interests,
+        goal_career: formData.goalCareer,
       })
+      if (error) throw error
       toast.success('Profile created successfully!')
       onComplete()
     } catch (error) {

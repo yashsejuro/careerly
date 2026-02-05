@@ -4,7 +4,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { useState, useEffect } from 'react'
 import { Spinner } from './components/ui/spinner'
 import { useAuth } from './lib/auth'
-import { careerlyApi } from './lib/api'
+import { supabase } from './lib/supabaseClient'
 
 export default function App() {
   const { isAuthenticated, isLoading, user } = useAuth()
@@ -15,10 +15,14 @@ export default function App() {
     async function checkProfile() {
       if (isAuthenticated && user) {
         try {
-          const profile = await careerlyApi.db.profiles.exists({
-            where: { userId: user.id }
-          })
-          setHasProfile(profile)
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('user_id', user.id)
+            .limit(1)
+          
+          if (error) throw error
+          setHasProfile((data?.length ?? 0) > 0)
         } catch (error) {
           console.error('Error checking profile:', error)
           setHasProfile(false)

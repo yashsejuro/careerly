@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import { supabase } from './supabaseClient'
 
 type AuthUser = {
   id: string
@@ -11,44 +12,57 @@ type AuthContextValue = {
   user: AuthUser | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: () => void
-  logout: () => void
+  loginWithEmail: (email: string) => Promise<void>
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
-
-const STORAGE_KEY = 'careerly-auth-user'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Load initial session
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored))
-      } catch {
-        window.localStorage.removeItem(STORAGE_KEY)
+    const init = async () => {
+      const { data } = await supabase.auth.getUser()
+      if (data.user) {
+        setUser({
+          id: data.user.id,
+          displayName: data.user.user_metadata.full_name || data.user.email || 'Student',
+          email: data.user.email ?? undefined,
+          imageUrl: data.user.user_metadata.avatar_url,
+        })
       }
+      setIsLoading(false)
     }
-    setIsLoading(false)
+    init()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        setUser(null)
+      } else {
+        const u = session.user
+        setUser({
+          id: u.id,
+          displayName: u.user_metadata.full_name || u.email || 'Student',
+          email: u.email ?? undefined,
+          imageUrl: u.user_metadata.avatar_url,
+        })
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  const login = () => {
-    // Simple, local demo login. Replace with real auth later.
-    const demoUser: AuthUser = {
-      id: 'demo-student',
-      displayName: 'Demo Student',
-      email: 'student@example.com',
-    }
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(demoUser))
-    setUser(demoUser)
+  const loginWithEmail = async (email: string) => {
+    await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin } })
   }
 
-  const logout = () => {
-    window.localStorage.removeItem(STORAGE_KEY)
-    setUser(null)
+  const logout = async () => {
+    await supabase.auth.signOut()
   }
 
   return (
@@ -57,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         isAuthenticated: !!user,
         isLoading,
-        login,
+        loginWithEmail,
         logout,
       }}
     >
@@ -68,9 +82,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext)
-  if (!ctx) {
-    throw new Error('useAuth must be used within AuthProvider')
-  }
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
   return ctx
 }
-
