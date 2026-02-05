@@ -1,95 +1,91 @@
-#🚀 Careerly
+<p align="center">
+  <h1 align="center">🚀 Careerly</h1>
+  <p align="center">
+    AI-powered career & internship navigator for college students
+  </p>
+</p>
 
-AI-powered career & internship navigator for college students
-Careerly helps students move from confusion → clarity → action by generating personalized career roadmaps, identifying skill gaps, recommending real-world projects, and tracking internship applications — all in one platform.
-Built by a student, for students, Careerly focuses on practical outcomes, not generic career advice.
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Active-success" />
+  <img src="https://img.shields.io/badge/Next.js-000?logo=nextdotjs" />
+  <img src="https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white" />
+  <img src="https://img.shields.io/badge/AI-Gemini-blue" />
+</p>
 
-🧠 The Problem
-Most college students struggle with:
-❌ No clear career direction
-❌ Too many skills, no learning order
-❌ Random projects with no resume impact
-❌ Applying to internships blindly
-❌ Advice that’s generic, unrealistic, or outdated
-Motivation isn’t the issue.
-Clarity and execution are.
+---
 
-💡 The Solution
-Careerly acts as a personal AI career navigator.
-It understands:
-your degree
-your current skills
-your interests
-your career goals
-…and turns that into clear, actionable next steps you can actually follow.
+## 🧠 Problem
 
-✨ Key Features (MVP)
-🔹 Personalized Career Roadmaps
-2–3 realistic career paths based on your profile
-Required skills (must-have vs good-to-have)
-Step-by-step learning order
-Month-wise timeline
-🔹 Skill Gap Analysis
-Identifies missing core skills
-Ranks them by priority
-Suggests practical ways to learn each skill
-No fluff. No paid course pushing.
-🔹 Project Recommendations
-Resume-worthy project ideas
-Problem-focused (not clone apps)
-Suggested tech stack & key features
-Designed to impress recruiters
-🔹 Internship Application Tracker
-Track where you applied
-Application status (Applied / Interview / Rejected)
-Notes and follow-ups
-Pattern insights over time
-🔹 Student-Friendly AI
-Tailored for Indian college students
-Practical advice over buzzwords
-Encouraging but realistic tone
+College students often face:
 
-🛠️ Tech Stack
-Frontend: Next.js + Tailwind CSS
-Backend: Node.js (API routes)
-Database: MongoDB
-AI Layer: Google Gemini / LLM APIs
-Authentication: Email / OAuth (planned)
-Hosting: Vercel
-Built with scalability and real users in mind.
+- ❌ No clear career direction  
+- ❌ Too many skills, no learning order  
+- ❌ Random projects with no resume impact  
+- ❌ Blind internship applications  
+- ❌ Generic or unrealistic career advice  
 
-🎯 Who Is Careerly For?
-College students (BCA, BSc, BE, BTech, etc.)
-Beginners confused about career direction
-Students preparing for internships & placements
-Self-learners who want structure, not chaos
+---
 
-🚧 Project Status
-🟡 Active Development (MVP Phase)
-Planned next:
-Resume analysis & feedback
-Internship recommendations
-Progress tracking & analytics
-Community-driven insights
+## 💡 Solution
 
-🤝 Contributing
-Contributions, ideas, and feedback are welcome.
-If you’re a student:
-suggest features you wish you had
-report confusing UX
-help test real-world use cases
+**Careerly** is a personal AI career navigator that turns student profiles into clear, actionable career plans.
 
-🌱 Vision
-Careerly aims to become:
-The operating system for a student’s career journey
-From first year → first internship → first job.
+It analyzes:
+- degree  
+- current skills  
+- interests  
+- goals  
 
-📬 Contact
-Interested in:
-collaborating
-testing the MVP
-or sharing feedback
-Open an issue or reach out — happy to connect.
+…and guides students step-by-step toward internships and jobs.
 
+---
 
+## ✨ Core Features
 
+### 🔹 Personalized Career Roadmaps
+- 2–3 realistic career paths
+- Must-have vs good-to-have skills
+- Step-by-step learning order
+- Month-wise timelines
+
+### 🔹 Skill Gap Analysis
+- Identifies missing core skills
+- Priority-based ranking
+- Practical learning suggestions
+
+### 🔹 Project Recommendations
+- Resume-worthy project ideas
+- Problem-focused (not clones)
+- Suggested tech stack & features
+
+### 🔹 Internship Application Tracker
+- Track applications in one place
+- Status: Applied / Interview / Rejected
+- Notes and follow-ups
+
+---
+
+## 🛠️ Tech Stack
+
+```txt
+Frontend   → Next.js, Tailwind CSS
+Backend    → Node.js (API Routes)
+Database   → MongoDB Atlas
+AI Layer   → Google Gemini / LLM APIs
+Hosting    → Vercel
+```
+### Who Is This For?
+-College students (BCA, BSc, BE, BTech, etc.)
+-Beginners confused about career paths
+-Students preparing for internships & placements
+-Self-learners who want structure
+
+### 🤝 Contributing
+-Contributions, ideas, and feedback are welcome.
+-Suggest features you wish you had as a student
+-Report UX or logic issues
+-Help test real-world use cases
+
+### ⭐ Support
+-If this project resonates with you, consider starring the repo.
+-It genuinely helps the project grow.
