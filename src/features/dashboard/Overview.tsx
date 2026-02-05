@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useBlinkAuth } from '@blinkdotnew/react'
-import { blink } from '@/lib/blink'
+import { useAuth } from '@/lib/auth'
+import { careerlyApi } from '@/lib/api'
 import { Map, Target, Rocket, ChevronRight, Sparkles, Trophy } from 'lucide-react'
 
 export function Overview({ setActiveView }: { setActiveView: (view: any) => void }) {
-  const { user } = useBlinkAuth()
+  const { user } = useAuth()
   const [profile, setProfile] = useState<any>(null)
   const [internshipCount, setInternshipCount] = useState(0)
 
@@ -14,8 +14,8 @@ export function Overview({ setActiveView }: { setActiveView: (view: any) => void
     async function fetchData() {
       if (!user) return
       const [p, count] = await Promise.all([
-        blink.db.profiles.list({ where: { userId: user.id }, limit: 1 }),
-        blink.db.internships.count({ where: { userId: user.id } })
+        careerlyApi.db.profiles.list({ where: { userId: user.id }, limit: 1 }),
+        careerlyApi.db.internships.count({ where: { userId: user.id } })
       ])
       if (p.length > 0) setProfile(p[0])
       setInternshipCount(count)

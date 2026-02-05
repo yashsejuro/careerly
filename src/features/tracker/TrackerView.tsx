@@ -19,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useBlinkAuth } from '@blinkdotnew/react'
-import { blink } from '@/lib/blink'
+import { useAuth } from '@/lib/auth'
+import { careerlyApi } from '@/lib/api'
 import { 
   Plus, 
   Search, 
@@ -48,7 +48,7 @@ interface Internship {
 }
 
 export function TrackerView() {
-  const { user } = useBlinkAuth()
+  const { user } = useAuth()
   const [internships, setInternships] = useState<Internship[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -67,7 +67,7 @@ export function TrackerView() {
     if (!user) return
     setLoading(true)
     try {
-      const data = await blink.db.internships.list({
+      const data = await careerlyApi.db.internships.list({
         where: { userId: user.id },
         orderBy: { createdAt: 'desc' }
       })
@@ -85,7 +85,7 @@ export function TrackerView() {
       return
     }
     try {
-      await blink.db.internships.create({
+      await careerlyApi.db.internships.create({
         userId: user.id,
         ...newInternship,
         createdAt: new Date().toISOString()
@@ -105,7 +105,7 @@ export function TrackerView() {
 
   const handleDelete = async (id: string) => {
     try {
-      await blink.db.internships.delete(id)
+      await careerlyApi.db.internships.delete(id)
       toast.success('Internship deleted')
       fetchInternships()
     } catch (error) {

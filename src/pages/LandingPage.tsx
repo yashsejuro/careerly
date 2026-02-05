@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button'
-import { blink } from '@/lib/blink'
+import { useAuth } from '@/lib/auth'
 import { ArrowRight, Compass, Target, Rocket, ClipboardCheck } from 'lucide-react'
 
 export function LandingPage() {
-  const handleLogin = () => blink.auth.login(window.location.href)
+  const { login } = useAuth()
+  const handleLogin = () => login()
 
   return (
     <div className="min-h-screen bg-background selection:bg-primary/20">

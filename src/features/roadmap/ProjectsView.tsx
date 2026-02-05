@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useBlinkAuth } from '@blinkdotnew/react'
-import { blink } from '@/lib/blink'
+import { useAuth } from '@/lib/auth'
+import { careerlyApi } from '@/lib/api'
 import { Rocket, Sparkles, Code2, Layers, Cpu, ArrowUpRight } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
 
 export function ProjectsView() {
-  const { user } = useBlinkAuth()
+  const { user } = useAuth()
   const [projects, setProjects] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
@@ -32,7 +32,7 @@ export function ProjectsView() {
     if (!user) return
     setGenerating(true)
     try {
-      const profiles = await blink.db.profiles.list({
+      const profiles = await careerlyApi.db.profiles.list({
         where: { userId: user.id },
         limit: 1
       })
@@ -52,7 +52,7 @@ Each project should include:
 4. Key features to implement.
 5. Why it will impress recruiters for the ${profile.goalCareer} role.`
 
-      const { object } = await blink.ai.generateObject({
+      const { object } = await careerlyApi.ai.generateObject({
         prompt,
         schema: {
           type: 'object',

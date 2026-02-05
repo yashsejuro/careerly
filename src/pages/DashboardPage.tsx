@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useBlinkAuth } from '@blinkdotnew/react'
+import { useAuth } from '@/lib/auth'
 import { 
   Compass, 
   LayoutDashboard, 
@@ -13,7 +13,6 @@ import {
   User as UserIcon
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { blink } from '@/lib/blink'
 import { Overview } from '@/features/dashboard/Overview'
 import { RoadmapView } from '@/features/roadmap/RoadmapView'
 import { SkillsView } from '@/features/roadmap/SkillsView'
@@ -25,11 +24,9 @@ import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarMenu, Sid
 type View = 'overview' | 'roadmap' | 'skills' | 'projects' | 'tracker'
 
 export function DashboardPage() {
-  const { user } = useBlinkAuth()
+  const { user, logout } = useAuth()
   const [activeView, setActiveView] = useState<View>('overview')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-
-  const handleLogout = () => blink.auth.logout()
 
   const navItems = [
     { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
@@ -93,7 +90,7 @@ export function DashboardPage() {
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
           </div>
-          <Button variant="ghost" className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleLogout}>
+          <Button variant="ghost" className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={logout}>
             <LogOut className="w-5 h-5" />
             Logout
           </Button>
@@ -132,7 +129,7 @@ export function DashboardPage() {
                 )
               })}
             </nav>
-            <Button variant="ghost" className="w-full justify-start gap-3 text-destructive mt-auto" onClick={handleLogout}>
+            <Button variant="ghost" className="w-full justify-start gap-3 text-destructive mt-auto" onClick={logout}>
               <LogOut className="w-5 h-5" />
               Logout
             </Button>

@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useBlinkAuth } from '@blinkdotnew/react'
-import { blink } from '@/lib/blink'
+import { useAuth } from '@/lib/auth'
+import { careerlyApi } from '@/lib/api'
 import { Sparkles, MapPin, ChevronRight, CheckCircle2, Clock, RotateCcw } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
 
 export function RoadmapView() {
-  const { user } = useBlinkAuth()
+  const { user } = useAuth()
   const [roadmap, setRoadmap] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
@@ -17,7 +17,7 @@ export function RoadmapView() {
     async function fetchRoadmap() {
       if (!user) return
       try {
-        const records = await blink.db.roadmaps.list({
+        const records = await careerlyApi.db.roadmaps.list({
           where: { userId: user.id },
           limit: 1
         })
@@ -37,7 +37,7 @@ export function RoadmapView() {
     if (!user) return
     setGenerating(true)
     try {
-      const profiles = await blink.db.profiles.list({
+      const profiles = await careerlyApi.db.profiles.list({
         where: { userId: user.id },
         limit: 1
       })
@@ -58,7 +58,7 @@ Target Career Goal: ${profile.goalCareer}
 Create a structured step-by-step roadmap with phases (e.g. Foundation, Specialization, Portfolio, Application).
 Each phase should have specific actionable items.`
 
-      const { object } = await blink.ai.generateObject({
+      const { object } = await careerlyApi.ai.generateObject({
         prompt,
         schema: {
           type: 'object',
@@ -85,7 +85,7 @@ Each phase should have specific actionable items.`
       })
 
       const roadmapData = object as any
-      await blink.db.roadmaps.upsert({
+      await careerlyApi.db.roadmaps.upsert({
         userId: user.id,
         data: JSON.stringify(roadmapData),
         updatedAt: new Date().toISOString()

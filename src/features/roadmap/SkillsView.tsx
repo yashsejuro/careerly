@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useBlinkAuth } from '@blinkdotnew/react'
-import { blink } from '@/lib/blink'
+import { useAuth } from '@/lib/auth'
+import { careerlyApi } from '@/lib/api'
 import { Target, ArrowRight, BookOpen, ExternalLink, Sparkles, BrainCircuit } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
 
 export function SkillsView() {
-  const { user } = useBlinkAuth()
+  const { user } = useAuth()
   const [analysis, setAnalysis] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [analyzing, setAnalyzing] = useState(false)
@@ -34,7 +34,7 @@ export function SkillsView() {
     if (!user) return
     setAnalyzing(true)
     try {
-      const profiles = await blink.db.profiles.list({
+      const profiles = await careerlyApi.db.profiles.list({
         where: { userId: user.id },
         limit: 1
       })
@@ -51,7 +51,7 @@ Identify:
 2. The most critical "Gap Skills" they need to learn.
 3. Recommended resources for each gap skill (online courses, documentation, or concepts).`
 
-      const { object } = await blink.ai.generateObject({
+      const { object } = await careerlyApi.ai.generateObject({
         prompt,
         schema: {
           type: 'object',

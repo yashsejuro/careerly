@@ -1,13 +1,13 @@
-import { useBlinkAuth } from '@blinkdotnew/react'
 import { LandingPage } from './pages/LandingPage'
 import { OnboardingPage } from './pages/OnboardingPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { useState, useEffect } from 'react'
-import { blink } from './lib/blink'
 import { Spinner } from './components/ui/spinner'
+import { useAuth } from './lib/auth'
+import { careerlyApi } from './lib/api'
 
 export default function App() {
-  const { isAuthenticated, isLoading, user } = useBlinkAuth()
+  const { isAuthenticated, isLoading, user } = useAuth()
   const [hasProfile, setHasProfile] = useState<boolean | null>(null)
   const [checkingProfile, setCheckingProfile] = useState(true)
 
@@ -15,7 +15,7 @@ export default function App() {
     async function checkProfile() {
       if (isAuthenticated && user) {
         try {
-          const profile = await blink.db.profiles.exists({
+          const profile = await careerlyApi.db.profiles.exists({
             where: { userId: user.id }
           })
           setHasProfile(profile)

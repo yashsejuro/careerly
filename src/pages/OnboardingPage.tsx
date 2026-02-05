@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { blink } from '@/lib/blink'
-import { useBlinkAuth } from '@blinkdotnew/react'
+import { careerlyApi } from '@/lib/api'
+import { useAuth } from '@/lib/auth'
 import { Compass, Sparkles, ChevronRight, ChevronLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -13,7 +13,7 @@ interface OnboardingPageProps {
 }
 
 export function OnboardingPage({ onComplete }: OnboardingPageProps) {
-  const { user } = useBlinkAuth()
+  const { user } = useAuth()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -31,7 +31,7 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
     if (!user) return
     setLoading(true)
     try {
-      await blink.db.profiles.create({
+      await careerlyApi.db.profiles.create({
         userId: user.id,
         ...formData,
         createdAt: new Date().toISOString()
