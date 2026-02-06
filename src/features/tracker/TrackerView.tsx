@@ -3,14 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from '@/components/ui/dialog'
 import {
   Select,
@@ -21,13 +21,13 @@ import {
 } from "@/components/ui/select"
 import { useAuth } from '@/lib/auth'
 import { supabase } from '@/lib/supabaseClient'
-import { 
-  Plus, 
-  Search, 
-  Building2, 
-  Calendar, 
-  MoreVertical, 
-  Trash2, 
+import {
+  Plus,
+  Search,
+  Building2,
+  Calendar,
+  MoreVertical,
+  Trash2,
   ExternalLink,
   ClipboardList,
   ChevronRight
@@ -53,7 +53,7 @@ export function TrackerView() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [isAddOpen, setIsAddOpen] = useState(false)
-  
+
   const [newInternship, setNewInternship] = useState<Partial<Internship & { appliedDate: string }>>({
     status: 'Interested',
     appliedDate: new Date().toISOString().split('T')[0]
@@ -72,7 +72,7 @@ export function TrackerView() {
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-      
+
       if (error) throw error
       setInternships((data as Internship[]) ?? [])
     } catch (error) {
@@ -97,7 +97,7 @@ export function TrackerView() {
         applied_date: newInternship.appliedDate,
         notes: newInternship.notes ?? null,
       })
-      
+
       if (error) throw error
       toast.success('Internship added!')
       setIsAddOpen(false)
@@ -118,7 +118,7 @@ export function TrackerView() {
         .from('internships')
         .delete()
         .eq('id', id)
-      
+
       if (error) throw error
       toast.success('Internship deleted')
       fetchInternships()
@@ -128,8 +128,8 @@ export function TrackerView() {
     }
   }
 
-  const filteredInternships = internships.filter(i => 
-    i.company.toLowerCase().includes(search.toLowerCase()) || 
+  const filteredInternships = internships.filter(i =>
+    i.company.toLowerCase().includes(search.toLowerCase()) ||
     i.position.toLowerCase().includes(search.toLowerCase())
   )
 
@@ -148,7 +148,7 @@ export function TrackerView() {
           <h1 className="text-3xl font-serif font-bold">Internship Tracker</h1>
           <p className="text-muted-foreground mt-1">Manage your applications and stay organized.</p>
         </div>
-        
+
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
             <Button className="rounded-full gap-2 px-6 shadow-lg shadow-primary/20">
@@ -163,25 +163,25 @@ export function TrackerView() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label>Company Name</Label>
-                <Input 
-                  placeholder="e.g. Google, Stripe" 
-                  value={newInternship.company || ''} 
+                <Input
+                  placeholder="e.g. Google, Stripe"
+                  value={newInternship.company || ''}
                   onChange={e => setNewInternship({ ...newInternship, company: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Position</Label>
-                <Input 
-                  placeholder="e.g. Software Engineer Intern" 
-                  value={newInternship.position || ''} 
+                <Input
+                  placeholder="e.g. Software Engineer Intern"
+                  value={newInternship.position || ''}
                   onChange={e => setNewInternship({ ...newInternship, position: e.target.value })}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Status</Label>
-                  <Select 
-                    value={newInternship.status} 
+                  <Select
+                    value={newInternship.status}
                     onValueChange={v => setNewInternship({ ...newInternship, status: v as Status })}
                   >
                     <SelectTrigger className="rounded-xl">
@@ -198,18 +198,18 @@ export function TrackerView() {
                 </div>
                 <div className="space-y-2">
                   <Label>Date</Label>
-                  <Input 
-                    type="date" 
-                    value={newInternship.appliedDate} 
+                  <Input
+                    type="date"
+                    value={newInternship.appliedDate}
                     onChange={e => setNewInternship({ ...newInternship, appliedDate: e.target.value })}
                   />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>Notes (Optional)</Label>
-                <Input 
-                  placeholder="Links or reminders..." 
-                  value={newInternship.notes || ''} 
+                <Input
+                  placeholder="Links or reminders..."
+                  value={newInternship.notes || ''}
                   onChange={e => setNewInternship({ ...newInternship, notes: e.target.value })}
                 />
               </div>
@@ -225,9 +225,9 @@ export function TrackerView() {
       <div className="flex items-center gap-4 bg-background border p-2 rounded-2xl shadow-sm">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search company or position..." 
-            className="pl-10 border-none bg-transparent focus-visible:ring-0" 
+          <Input
+            placeholder="Search company or position..."
+            className="pl-10 border-none bg-transparent focus-visible:ring-0"
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -256,7 +256,7 @@ export function TrackerView() {
                   <div className="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center shrink-0">
                     <Building2 className="w-6 h-6 text-primary" />
                   </div>
-                  
+
                   <div className="flex-1 min-w-0 text-center sm:text-left">
                     <h3 className="text-lg font-bold truncate">{internship.company}</h3>
                     <p className="text-sm text-muted-foreground truncate">{internship.position}</p>
@@ -267,25 +267,25 @@ export function TrackerView() {
                       <Calendar className="w-4 h-4" />
                       <span>{format(new Date(internship.applied_date), 'MMM d, yyyy')}</span>
                     </div>
-                    
+
                     <div className={`px-4 py-1.5 rounded-full text-xs font-bold border ${statusColors[internship.status]}`}>
                       {internship.status}
                     </div>
 
                     <div className="flex items-center gap-2">
-                       {internship.notes && (
-                         <Button variant="ghost" size="icon" className="rounded-full" onClick={() => toast.info(internship.notes || '')}>
-                           <ClipboardList className="w-4 h-4" />
-                         </Button>
-                       )}
-                       <Button 
-                         variant="ghost" 
-                         size="icon" 
-                         className="rounded-full text-destructive hover:bg-destructive/10"
-                         onClick={() => handleDelete(internship.id)}
-                        >
-                         <Trash2 className="w-4 h-4" />
-                       </Button>
+                      {internship.notes && (
+                        <Button variant="ghost" size="icon" className="rounded-full" onClick={() => toast(internship.notes || '')}>
+                          <ClipboardList className="w-4 h-4" />
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDelete(internship.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
                 </div>

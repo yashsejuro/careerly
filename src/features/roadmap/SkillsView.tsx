@@ -6,10 +6,12 @@ import { careerlyApi } from '@/lib/api'
 import { Target, ArrowRight, BookOpen, ExternalLink, Sparkles, BrainCircuit } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
+import { SkillAnalysis, GapSkill } from '@/types/roadmap'
 
 export function SkillsView() {
   const { user } = useAuth()
-  const [analysis, setAnalysis] = useState<any>(null)
+  const [analysis, setAnalysis] = useState<SkillAnalysis | null>(null)
+
   const [loading, setLoading] = useState(true)
   const [analyzing, setAnalyzing] = useState(false)
 
@@ -38,7 +40,7 @@ export function SkillsView() {
         where: { userId: user.id },
         limit: 1
       })
-      
+
       if (profiles.length === 0) return
       const profile = profiles[0]
 
@@ -56,9 +58,9 @@ Identify:
         schema: {
           type: 'object',
           properties: {
-            matchingSkills: { 
-              type: 'array', 
-              items: { type: 'string' } 
+            matchingSkills: {
+              type: 'array',
+              items: { type: 'string' }
             },
             gapSkills: {
               type: 'array',
@@ -77,7 +79,7 @@ Identify:
         }
       })
 
-      setAnalysis(object)
+      setAnalysis(object as SkillAnalysis)
     } catch (error) {
       console.error('Error analyzing skills:', error)
       toast.error('Failed to analyze skills.')
@@ -130,7 +132,7 @@ Identify:
         <div className="lg:col-span-2 space-y-6">
           <h2 className="text-xl font-bold px-1">Top Skills to Focus On</h2>
           <div className="grid grid-cols-1 gap-4">
-            {analysis?.gapSkills.map((gap: any, i: number) => (
+            {analysis?.gapSkills.map((gap: GapSkill, i: number) => (
               <Card key={i} className="rounded-3xl border shadow-sm hover:shadow-md transition-all overflow-hidden">
                 <div className="flex flex-col md:flex-row">
                   <div className={`md:w-2 ${gap.importance === 'high' ? 'bg-destructive' : gap.importance === 'medium' ? 'bg-primary' : 'bg-muted'}`} />

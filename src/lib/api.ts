@@ -59,11 +59,11 @@ export const careerlyApi = {
       },
     },
     roadmaps: {
-      async list({ where }: { where: WhereClause }) {
+      async list({ where, limit }: { where: WhereClause; limit?: number }) {
         const all = this._all().filter((p: any) =>
           where.userId ? p.userId === where.userId : true,
         )
-        return all
+        return typeof limit === 'number' ? all.slice(0, limit) : all
       },
       async upsert(roadmap: any) {
         const all = this._all()
@@ -89,7 +89,13 @@ export const careerlyApi = {
     },
   },
   ai: {
-    async generateObject<T>({ prompt }: { prompt: string }): Promise<{ object: T }> {
+    async generateObject<T>({
+      prompt,
+      schema,
+    }: {
+      prompt: string
+      schema?: any
+    }): Promise<{ object: T }> {
       // Simple deterministic mock so the UI has data.
       const fallback: any = {
         steps: [
@@ -99,6 +105,7 @@ export const careerlyApi = {
         ],
       }
       console.info('[careerlyApi.ai] Mock generateObject for prompt:', prompt)
+      console.info('[careerlyApi.ai] Schema:', schema)
       return { object: fallback }
     },
   },

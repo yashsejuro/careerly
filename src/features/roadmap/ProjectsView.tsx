@@ -6,10 +6,11 @@ import { careerlyApi } from '@/lib/api'
 import { Rocket, Sparkles, Code2, Layers, Cpu, ArrowUpRight } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
+import { ProjectSuggestion, ProjectSuggestions } from '@/types/roadmap'
 
 export function ProjectsView() {
   const { user } = useAuth()
-  const [projects, setProjects] = useState<any[]>([])
+  const [projects, setProjects] = useState<ProjectSuggestion[]>([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
 
@@ -36,7 +37,7 @@ export function ProjectsView() {
         where: { userId: user.id },
         limit: 1
       })
-      
+
       if (profiles.length === 0) return
       const profile = profiles[0]
 
@@ -76,7 +77,7 @@ Each project should include:
         }
       })
 
-      setProjects(object.projects)
+      setProjects((object as ProjectSuggestions).projects)
     } catch (error) {
       console.error('Error generating projects:', error)
       toast.error('Failed to generate project recommendations.')
@@ -101,14 +102,14 @@ Each project should include:
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {projects.map((project, i) => (
+        {projects.map((project: ProjectSuggestion, i: number) => (
           <Card key={i} className="rounded-3xl border shadow-sm flex flex-col hover:shadow-xl transition-all group overflow-hidden">
             <div className="h-32 bg-primary/5 flex items-center justify-center border-b group-hover:bg-primary/10 transition-colors">
               <div className="w-16 h-16 bg-background rounded-2xl flex items-center justify-center shadow-sm border border-primary/10 group-hover:scale-110 transition-transform">
                 {i === 0 ? <Code2 className="w-8 h-8 text-primary" /> : i === 1 ? <Layers className="w-8 h-8 text-primary" /> : <Cpu className="w-8 h-8 text-primary" />}
               </div>
             </div>
-            
+
             <CardHeader>
               <div className="flex justify-between items-start gap-2 mb-2">
                 <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${project.difficulty === 'Advanced' ? 'bg-orange-100 text-orange-600' : project.difficulty === 'Intermediate' ? 'bg-primary/10 text-primary' : 'bg-green-100 text-green-600'}`}>
@@ -162,9 +163,9 @@ Each project should include:
             </p>
           </div>
           <div className="shrink-0">
-             <div className="w-24 h-24 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
-               <Sparkles className="w-10 h-10" />
-             </div>
+            <div className="w-24 h-24 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
+              <Sparkles className="w-10 h-10" />
+            </div>
           </div>
         </div>
       </div>

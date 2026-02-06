@@ -6,10 +6,11 @@ import { careerlyApi } from '@/lib/api'
 import { Sparkles, MapPin, ChevronRight, CheckCircle2, Clock, RotateCcw } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
+import { CareerRoadmap, RoadmapPhase } from '@/types/roadmap'
 
 export function RoadmapView() {
   const { user } = useAuth()
-  const [roadmap, setRoadmap] = useState<any>(null)
+  const [roadmap, setRoadmap] = useState<CareerRoadmap | null>(null)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
 
@@ -41,7 +42,7 @@ export function RoadmapView() {
         where: { userId: user.id },
         limit: 1
       })
-      
+
       if (profiles.length === 0) {
         toast.error('Profile not found. Please complete onboarding.')
         return
@@ -84,7 +85,7 @@ Each phase should have specific actionable items.`
         }
       })
 
-      const roadmapData = object as any
+      const roadmapData = object as CareerRoadmap
       await careerlyApi.db.roadmaps.upsert({
         userId: user.id,
         data: JSON.stringify(roadmapData),
@@ -152,7 +153,7 @@ Each phase should have specific actionable items.`
         {/* Timeline Line */}
         <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-border -z-10" />
 
-        {roadmap.phases.map((phase: any, phaseIdx: number) => (
+        {roadmap.phases.map((phase: RoadmapPhase, phaseIdx: number) => (
           <div key={phaseIdx} className="space-y-6">
             <div className="flex items-center gap-6">
               <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0 border-4 border-background">
@@ -185,7 +186,7 @@ Each phase should have specific actionable items.`
           <Trophy className="w-12 h-12 text-primary mx-auto" />
           <h3 className="text-xl font-bold">Stay Consistent!</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Success is the sum of small efforts repeated day in and day out. 
+            Success is the sum of small efforts repeated day in and day out.
             Keep following your roadmap and you'll get there.
           </p>
         </div>
@@ -196,16 +197,16 @@ Each phase should have specific actionable items.`
 
 function Trophy({ className }: { className?: string }) {
   return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={className}
     >
       <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
