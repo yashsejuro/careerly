@@ -58,6 +58,33 @@ export const careerlyApi = {
         }
       },
     },
+    skills: {
+      async list({ where, limit }: { where: WhereClause; limit?: number }) {
+        const all = this._all().filter((p: any) =>
+          where.userId ? p.userId === where.userId : true,
+        )
+        return typeof limit === 'number' ? all.slice(0, limit) : all
+      },
+      async upsert(analysis: any) {
+        const all = this._all()
+        const idx = all.findIndex((a: any) => a.userId === analysis.userId)
+        if (idx >= 0) {
+          all[idx] = { ...all[idx], ...analysis }
+        } else {
+          all.push({ id: crypto.randomUUID(), ...analysis })
+        }
+        window.localStorage.setItem('careerly-skills', JSON.stringify(all))
+      },
+      _all() {
+        const raw = window.localStorage.getItem('careerly-skills')
+        if (!raw) return []
+        try {
+          return JSON.parse(raw)
+        } catch {
+          return []
+        }
+      },
+    },
     roadmaps: {
       async list({ where, limit }: { where: WhereClause; limit?: number }) {
         const all = this._all().filter((p: any) =>
@@ -97,13 +124,35 @@ export const careerlyApi = {
       schema?: any
     }): Promise<{ object: T }> {
       // Simple deterministic mock so the UI has data.
-      const fallback: any = {
+      let fallback: any = {
         steps: [
           { title: 'Learn HTML, CSS, JS', duration: '2-4 weeks' },
           { title: 'Build 2–3 small projects', duration: '4-6 weeks' },
           { title: 'Apply for internships', duration: 'ongoing' },
         ],
       }
+
+      // If schema looks like skill analysis, return compatible mock
+      if (schema?.properties?.matchingSkills) {
+        fallback = {
+            matchingSkills: ['JavaScript', 'React'],
+            gapSkills: [
+                {
+                    skill: 'TypeScript',
+                    importance: 'high',
+                    reason: 'Essential for modern web dev',
+                    resources: ['TypeScript Docs', 'Total TypeScript']
+                },
+                {
+                    skill: 'Node.js',
+                    importance: 'medium',
+                    reason: 'Backend knowledge is useful',
+                    resources: ['Node.js Docs']
+                }
+            ]
+        }
+      }
+
       console.info('[careerlyApi.ai] Mock generateObject for prompt:', prompt)
       console.info('[careerlyApi.ai] Schema:', schema)
       return { object: fallback }
