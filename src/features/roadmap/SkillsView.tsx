@@ -20,9 +20,17 @@ export function SkillsView() {
       if (!user) return
       setLoading(true)
       try {
-        // We'll regenerate analysis on each visit for fresh insights, or we could cache it.
-        // For the MVP, let's just generate it once or provide a refresh button.
-        await analyzeSkills()
+        // Check for cached analysis first
+        const existing = await careerlyApi.db.skills.list({
+          where: { userId: user.id },
+          limit: 1,
+        })
+
+        if (existing.length > 0 && existing[0].data) {
+          setAnalysis(JSON.parse(existing[0].data))
+        } else {
+          await analyzeSkills()
+        }
       } catch (error) {
         console.error('Error fetching analysis:', error)
       } finally {
@@ -38,7 +46,7 @@ export function SkillsView() {
     try {
       const profiles = await careerlyApi.db.profiles.list({
         where: { userId: user.id },
-        limit: 1
+        limit: 1,
       })
 
       if (profiles.length === 0) return
@@ -60,7 +68,7 @@ Identify:
           properties: {
             matchingSkills: {
               type: 'array',
-              items: { type: 'string' }
+              items: { type: 'string' },
             },
             gapSkills: {
               type: 'array',
@@ -70,16 +78,25 @@ Identify:
                   skill: { type: 'string' },
                   importance: { type: 'string', enum: ['high', 'medium', 'low'] },
                   reason: { type: 'string' },
-                  resources: { type: 'array', items: { type: 'string' } }
-                }
-              }
-            }
+                  resources: { type: 'array', items: { type: 'string' } },
+                },
+              },
+            },
           },
-          required: ['matchingSkills', 'gapSkills']
-        }
+          required: ['matchingSkills', 'gapSkills'],
+        },
       })
 
-      setAnalysis(object as SkillAnalysis)
+      const analysisData = object as SkillAnalysis
+
+      // Save to DB for caching
+      await careerlyApi.db.skills.upsert({
+        userId: user.id,
+        data: JSON.stringify(analysisData),
+        updatedAt: new Date().toISOString()
+      })
+
+      setAnalysis(analysisData)
     } catch (error) {
       console.error('Error analyzing skills:', error)
       toast.error('Failed to analyze skills.')
