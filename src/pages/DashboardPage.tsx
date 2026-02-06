@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth'
-import { 
-  Compass, 
-  LayoutDashboard, 
-  Map, 
-  Target, 
-  Rocket, 
-  ClipboardCheck, 
+import {
+  Compass,
+  LayoutDashboard,
+  Map,
+  Target,
+  Rocket,
+  ClipboardCheck,
   LogOut,
   Menu,
   X,
@@ -56,10 +56,10 @@ export function DashboardPage() {
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <Compass className="text-primary-foreground w-5 h-5" />
             </div>
-            <span className="text-lg font-serif font-bold">Career Nav</span>
+            <span className="text-lg font-serif font-bold">Careerly</span>
           </div>
         </div>
-        
+
         <nav className="flex-1 px-4 space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon
@@ -104,7 +104,7 @@ export function DashboardPage() {
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-2">
                 <Compass className="text-primary w-6 h-6" />
-                <span className="text-lg font-serif font-bold">Career Nav</span>
+                <span className="text-lg font-serif font-bold">Careerly</span>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)}>
                 <X className="w-6 h-6" />
@@ -149,10 +149,10 @@ export function DashboardPage() {
             </h2>
           </div>
           <div className="flex items-center gap-3">
-             <div className="hidden sm:flex items-center gap-2 text-xs font-medium px-3 py-1.5 bg-secondary rounded-full text-secondary-foreground">
-               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-               AI System Ready
-             </div>
+            <div className="hidden sm:flex items-center gap-2 text-xs font-medium px-3 py-1.5 bg-secondary rounded-full text-secondary-foreground">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              AI System Ready
+            </div>
           </div>
         </header>
 
