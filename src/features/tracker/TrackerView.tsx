@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { useState, useEffect, useCallback } from 'react'
+import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -24,28 +24,12 @@ import { supabase } from '@/lib/supabaseClient'
 import {
   Plus,
   Search,
-  Building2,
-  Calendar,
-  MoreVertical,
-  Trash2,
-  ExternalLink,
-  ClipboardList,
-  ChevronRight
+  ClipboardList
 } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
-import { format } from 'date-fns'
-
-type Status = 'Applied' | 'Interview' | 'Offer' | 'Rejected' | 'Interested'
-
-interface Internship {
-  id: string
-  company: string
-  position: string
-  status: Status
-  applied_date: string
-  notes?: string
-}
+import { Internship, Status } from './types'
+import { InternshipItem } from './InternshipItem'
 
 export function TrackerView() {
   const { user } = useAuth()
@@ -59,11 +43,7 @@ export function TrackerView() {
     appliedDate: new Date().toISOString().split('T')[0]
   })
 
-  useEffect(() => {
-    fetchInternships()
-  }, [user])
-
-  const fetchInternships = async () => {
+  const fetchInternships = useCallback(async () => {
     if (!user) return
     setLoading(true)
     try {
@@ -81,7 +61,11 @@ export function TrackerView() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    fetchInternships()
+  }, [fetchInternships])
 
   const handleAdd = async () => {
     if (!user || !newInternship.company || !newInternship.position) {
@@ -112,7 +96,7 @@ export function TrackerView() {
     }
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     try {
       const { error } = await supabase
         .from('internships')
@@ -126,20 +110,12 @@ export function TrackerView() {
       console.error('Error deleting internship:', error)
       toast.error('Failed to delete')
     }
-  }
+  }, [fetchInternships])
 
   const filteredInternships = internships.filter(i =>
     i.company.toLowerCase().includes(search.toLowerCase()) ||
     i.position.toLowerCase().includes(search.toLowerCase())
   )
-
-  const statusColors: Record<Status, string> = {
-    'Interested': 'bg-blue-100 text-blue-700 border-blue-200',
-    'Applied': 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    'Interview': 'bg-purple-100 text-purple-700 border-purple-200',
-    'Offer': 'bg-green-100 text-green-700 border-green-200',
-    'Rejected': 'bg-red-100 text-red-700 border-red-200'
-  }
 
   return (
     <div className="space-y-8 pb-12">
@@ -250,47 +226,11 @@ export function TrackerView() {
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {filteredInternships.map((internship) => (
-            <Card key={internship.id} className="rounded-2xl border shadow-sm hover:shadow-md transition-all overflow-hidden group">
-              <CardContent className="p-0">
-                <div className="flex flex-col sm:flex-row items-center p-6 gap-6">
-                  <div className="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center shrink-0">
-                    <Building2 className="w-6 h-6 text-primary" />
-                  </div>
-
-                  <div className="flex-1 min-w-0 text-center sm:text-left">
-                    <h3 className="text-lg font-bold truncate">{internship.company}</h3>
-                    <p className="text-sm text-muted-foreground truncate">{internship.position}</p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      <span>{format(new Date(internship.applied_date), 'MMM d, yyyy')}</span>
-                    </div>
-
-                    <div className={`px-4 py-1.5 rounded-full text-xs font-bold border ${statusColors[internship.status]}`}>
-                      {internship.status}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {internship.notes && (
-                        <Button variant="ghost" size="icon" className="rounded-full" onClick={() => toast(internship.notes || '')}>
-                          <ClipboardList className="w-4 h-4" />
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDelete(internship.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <InternshipItem
+              key={internship.id}
+              internship={internship}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}
