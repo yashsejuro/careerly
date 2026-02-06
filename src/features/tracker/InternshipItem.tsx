@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Building2, Calendar, ClipboardList, Trash2 } from 'lucide-react'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import toast from 'react-hot-toast'
 import { Internship, Status } from './types'
 
@@ -36,7 +36,7 @@ export const InternshipItem = memo(function InternshipItem({ internship, onDelet
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="w-4 h-4" />
-              <span>{format(internship.applied_date, 'MMM d, yyyy')}</span>
+              <span>{format(parseISO(internship.applied_date), 'MMM d, yyyy')}</span>
             </div>
 
             <div className={`px-4 py-1.5 rounded-full text-xs font-bold border ${statusColors[internship.status]}`}>
