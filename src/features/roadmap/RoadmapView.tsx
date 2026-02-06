@@ -87,6 +87,12 @@ Each phase should have specific actionable items.`
       })
 
       const roadmapData = object as CareerRoadmap
+
+      if (!roadmapData || typeof roadmapData !== 'object' || !roadmapData.title || !Array.isArray(roadmapData.phases)) {
+        console.error('Invalid roadmap data structure received:', roadmapData)
+        throw new Error('Invalid roadmap data structure')
+      }
+
       await careerlyApi.db.roadmaps.upsert({
         userId: user.id,
         data: roadmapData,
