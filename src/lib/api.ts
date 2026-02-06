@@ -1,5 +1,30 @@
 type WhereClause = { userId?: string }
 
+/**
+ * SECURITY NOTICE
+ * ===============
+ * The previous implementation used window.localStorage to store data.
+ * This was vulnerable to XSS attacks (Insecure Data Storage).
+ *
+ * We have switched to an in-memory storage mechanism.
+ * PROS: Secure (data is not persisted on disk/browser storage).
+ * CONS: Data is lost on page reload.
+ *
+ * This is a mock API. In a real application, use a secure backend.
+ */
+
+type Store = {
+  profiles: any[]
+  internships: any[]
+  roadmaps: any[]
+}
+
+const memoryStore: Store = {
+  profiles: [],
+  internships: [],
+  roadmaps: [],
+}
+
 export const careerlyApi = {
   db: {
     profiles: {
@@ -10,7 +35,6 @@ export const careerlyApi = {
       async create(profile: any) {
         const all = this._all()
         all.push({ id: crypto.randomUUID(), ...profile })
-        window.localStorage.setItem('careerly-profiles', JSON.stringify(all))
       },
       async list({ where, limit }: { where: WhereClause; limit?: number }) {
         const all = this._all().filter((p: any) =>
@@ -19,13 +43,7 @@ export const careerlyApi = {
         return typeof limit === 'number' ? all.slice(0, limit) : all
       },
       _all() {
-        const raw = window.localStorage.getItem('careerly-profiles')
-        if (!raw) return []
-        try {
-          return JSON.parse(raw)
-        } catch {
-          return []
-        }
+        return memoryStore.profiles
       },
     },
     internships: {
@@ -42,20 +60,12 @@ export const careerlyApi = {
       async create(internship: any) {
         const all = this._all()
         all.push({ id: crypto.randomUUID(), ...internship })
-        window.localStorage.setItem('careerly-internships', JSON.stringify(all))
       },
       async delete(id: string) {
-        const all = this._all().filter((p: any) => p.id !== id)
-        window.localStorage.setItem('careerly-internships', JSON.stringify(all))
+        memoryStore.internships = memoryStore.internships.filter((p: any) => p.id !== id)
       },
       _all() {
-        const raw = window.localStorage.getItem('careerly-internships')
-        if (!raw) return []
-        try {
-          return JSON.parse(raw)
-        } catch {
-          return []
-        }
+        return memoryStore.internships
       },
     },
     roadmaps: {
@@ -75,16 +85,9 @@ export const careerlyApi = {
         } else {
           all.push({ id: crypto.randomUUID(), ...roadmap })
         }
-        window.localStorage.setItem('careerly-roadmaps', JSON.stringify(all))
       },
       _all() {
-        const raw = window.localStorage.getItem('careerly-roadmaps')
-        if (!raw) return []
-        try {
-          return JSON.parse(raw)
-        } catch {
-          return []
-        }
+        return memoryStore.roadmaps
       },
     },
   },
@@ -110,4 +113,3 @@ export const careerlyApi = {
     },
   },
 }
-
