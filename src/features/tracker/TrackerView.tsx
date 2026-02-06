@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -44,7 +43,11 @@ export function TrackerView() {
   })
 
   const fetchInternships = useCallback(async () => {
-    if (!user) return
+    if (!user) {
+      setInternships([])
+      setLoading(false)
+      return
+    }
     setLoading(true)
     try {
       const { data, error } = await supabase

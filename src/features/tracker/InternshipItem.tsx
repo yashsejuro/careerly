@@ -36,7 +36,7 @@ export const InternshipItem = memo(function InternshipItem({ internship, onDelet
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="w-4 h-4" />
-              <span>{format(new Date(internship.applied_date), 'MMM d, yyyy')}</span>
+              <span>{format(internship.applied_date, 'MMM d, yyyy')}</span>
             </div>
 
             <div className={`px-4 py-1.5 rounded-full text-xs font-bold border ${statusColors[internship.status]}`}>
@@ -45,7 +45,13 @@ export const InternshipItem = memo(function InternshipItem({ internship, onDelet
 
             <div className="flex items-center gap-2">
               {internship.notes && (
-                <Button variant="ghost" size="icon" className="rounded-full" onClick={() => toast(internship.notes || '')}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full"
+                  aria-label="View notes"
+                  onClick={() => toast(internship.notes || '')}
+                >
                   <ClipboardList className="w-4 h-4" />
                 </Button>
               )}
@@ -54,6 +60,7 @@ export const InternshipItem = memo(function InternshipItem({ internship, onDelet
                 size="icon"
                 className="rounded-full text-destructive hover:bg-destructive/10"
                 onClick={() => onDelete(internship.id)}
+                aria-label={`Delete internship at ${internship.company}`}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
