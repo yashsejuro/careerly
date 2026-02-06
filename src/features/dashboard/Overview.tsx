@@ -1,32 +1,11 @@
-import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth'
-import { supabase } from '@/lib/supabaseClient'
 import { Map, Target, Rocket, ChevronRight, Sparkles, Trophy } from 'lucide-react'
+import { useDashboard } from './DashboardContext'
 
 export function Overview({ setActiveView }: { setActiveView: (view: any) => void }) {
   const { user } = useAuth()
-  const [profile, setProfile] = useState<any>(null)
-  const [internshipCount, setInternshipCount] = useState(0)
-
-  useEffect(() => {
-    async function fetchData() {
-      if (!user) return
-      const [pResult, iResult] = await Promise.all([
-        supabase.from('profiles').select('*').eq('user_id', user.id).limit(1),
-        supabase
-          .from('internships')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id),
-      ])
-
-      const profileRows = pResult.data ?? []
-      if (profileRows.length > 0) setProfile(profileRows[0])
-      setInternshipCount(iResult.count ?? 0)
-    }
-    fetchData()
-  }, [user])
+  const { profile, internshipCount } = useDashboard()
 
   return (
     <div className="space-y-8">
