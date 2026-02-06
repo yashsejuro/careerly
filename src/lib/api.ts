@@ -1,5 +1,31 @@
 type WhereClause = { userId?: string }
 
+// Cache for API responses to avoid repeated JSON parsing
+const memoryCache = {
+  profiles: null as any[] | null,
+  internships: null as any[] | null,
+  roadmaps: null as any[] | null,
+}
+
+function getCached(key: keyof typeof memoryCache, storageKey: string): any[] {
+  if (memoryCache[key]) {
+    return memoryCache[key]!
+  }
+  const raw = window.localStorage.getItem(storageKey)
+  if (!raw) {
+    memoryCache[key] = []
+    return []
+  }
+  try {
+    const data = JSON.parse(raw)
+    memoryCache[key] = data
+    return data
+  } catch {
+    memoryCache[key] = []
+    return []
+  }
+}
+
 export const careerlyApi = {
   db: {
     profiles: {
@@ -10,6 +36,7 @@ export const careerlyApi = {
       async create(profile: any) {
         const all = this._all()
         all.push({ id: crypto.randomUUID(), ...profile })
+        memoryCache.profiles = all
         window.localStorage.setItem('careerly-profiles', JSON.stringify(all))
       },
       async list({ where, limit }: { where: WhereClause; limit?: number }) {
@@ -19,13 +46,7 @@ export const careerlyApi = {
         return typeof limit === 'number' ? all.slice(0, limit) : all
       },
       _all() {
-        const raw = window.localStorage.getItem('careerly-profiles')
-        if (!raw) return []
-        try {
-          return JSON.parse(raw)
-        } catch {
-          return []
-        }
+        return [...getCached('profiles', 'careerly-profiles')]
       },
     },
     internships: {
@@ -42,20 +63,16 @@ export const careerlyApi = {
       async create(internship: any) {
         const all = this._all()
         all.push({ id: crypto.randomUUID(), ...internship })
+        memoryCache.internships = all
         window.localStorage.setItem('careerly-internships', JSON.stringify(all))
       },
       async delete(id: string) {
         const all = this._all().filter((p: any) => p.id !== id)
+        memoryCache.internships = all
         window.localStorage.setItem('careerly-internships', JSON.stringify(all))
       },
       _all() {
-        const raw = window.localStorage.getItem('careerly-internships')
-        if (!raw) return []
-        try {
-          return JSON.parse(raw)
-        } catch {
-          return []
-        }
+        return [...getCached('internships', 'careerly-internships')]
       },
     },
     roadmaps: {
@@ -75,16 +92,11 @@ export const careerlyApi = {
         } else {
           all.push({ id: crypto.randomUUID(), ...roadmap })
         }
+        memoryCache.roadmaps = all
         window.localStorage.setItem('careerly-roadmaps', JSON.stringify(all))
       },
       _all() {
-        const raw = window.localStorage.getItem('careerly-roadmaps')
-        if (!raw) return []
-        try {
-          return JSON.parse(raw)
-        } catch {
-          return []
-        }
+        return [...getCached('roadmaps', 'careerly-roadmaps')]
       },
     },
   },
@@ -110,4 +122,3 @@ export const careerlyApi = {
     },
   },
 }
-
