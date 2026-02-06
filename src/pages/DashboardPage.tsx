@@ -20,6 +20,7 @@ import { ProjectsView } from '@/features/roadmap/ProjectsView'
 import { TrackerView } from '@/features/tracker/TrackerView'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider } from '@/components/ui/sidebar'
+import { DashboardProvider } from '@/features/dashboard/DashboardContext'
 
 type View = 'overview' | 'roadmap' | 'skills' | 'projects' | 'tracker'
 
@@ -48,9 +49,10 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-64 flex-col border-r bg-sidebar">
+    <DashboardProvider>
+      <div className="flex h-screen bg-background overflow-hidden">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:flex w-64 flex-col border-r bg-sidebar">
         <div className="p-6">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -161,7 +163,8 @@ export function DashboardPage() {
             {renderContent()}
           </div>
         </main>
+        </div>
       </div>
-    </div>
+    </DashboardProvider>
   )
 }
