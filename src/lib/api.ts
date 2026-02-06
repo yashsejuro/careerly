@@ -104,8 +104,6 @@ export const careerlyApi = {
           { title: 'Apply for internships', duration: 'ongoing' },
         ],
       }
-      console.info('[careerlyApi.ai] Mock generateObject for prompt:', prompt)
-      console.info('[careerlyApi.ai] Schema:', schema)
       return { object: fallback }
     },
   },
