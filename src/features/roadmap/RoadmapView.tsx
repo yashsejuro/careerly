@@ -23,7 +23,8 @@ export function RoadmapView() {
           limit: 1
         })
         if (records.length > 0) {
-          setRoadmap(JSON.parse(records[0].data))
+          const data = records[0].data
+          setRoadmap(typeof data === 'string' ? JSON.parse(data) : data)
         }
       } catch (error) {
         console.error('Error fetching roadmap:', error)
@@ -88,7 +89,7 @@ Each phase should have specific actionable items.`
       const roadmapData = object as CareerRoadmap
       await careerlyApi.db.roadmaps.upsert({
         userId: user.id,
-        data: JSON.stringify(roadmapData),
+        data: roadmapData,
         updatedAt: new Date().toISOString()
       })
 
