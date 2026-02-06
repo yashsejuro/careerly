@@ -1,12 +1,14 @@
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { LandingPage } from './pages/LandingPage'
 import { OnboardingPage } from './pages/OnboardingPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { AuthCallbackPage } from './pages/AuthCallbackPage'
 import { useState, useEffect } from 'react'
 import { Spinner } from './components/ui/spinner'
 import { useAuth } from './lib/auth'
 import { supabase } from './lib/supabaseClient'
 
-export default function App() {
+function MainApp() {
   const { isAuthenticated, isLoading, user } = useAuth()
   const [hasProfile, setHasProfile] = useState<boolean | null>(null)
   const [checkingProfile, setCheckingProfile] = useState(true)
@@ -20,7 +22,7 @@ export default function App() {
             .select('id')
             .eq('user_id', user.id)
             .limit(1)
-          
+
           if (error) throw error
           setHasProfile((data?.length ?? 0) > 0)
         } catch (error) {
@@ -53,4 +55,14 @@ export default function App() {
   }
 
   return <DashboardPage />
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      <Route path="/" element={<MainApp />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
 }
