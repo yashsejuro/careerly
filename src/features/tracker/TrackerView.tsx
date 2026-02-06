@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -128,10 +128,10 @@ export function TrackerView() {
     }
   }
 
-  const filteredInternships = internships.filter(i =>
+  const filteredInternships = useMemo(() => internships.filter(i =>
     i.company.toLowerCase().includes(search.toLowerCase()) ||
     i.position.toLowerCase().includes(search.toLowerCase())
-  )
+  ), [internships, search])
 
   const statusColors: Record<Status, string> = {
     'Interested': 'bg-blue-100 text-blue-700 border-blue-200',
