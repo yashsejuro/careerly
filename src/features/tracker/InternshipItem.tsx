@@ -61,6 +61,7 @@ export const InternshipItem = memo(function InternshipItem({ internship, onDelet
                 className="rounded-full text-destructive hover:bg-destructive/10"
                 onClick={() => onDelete(internship.id)}
                 aria-label={`Delete internship at ${internship.company}`}
+                aria-label={`Delete internship at ${internship.company}`}
               >
                 <Trash2 className="w-4 h-4" />
               </Button>
