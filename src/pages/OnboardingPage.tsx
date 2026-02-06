@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/lib/auth'
+import { profileSchema } from '@/lib/schemas'
 import { Compass, Sparkles, ChevronRight, ChevronLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -24,11 +25,40 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
     goalCareer: ''
   })
 
-  const nextStep = () => setStep(prev => prev + 1)
+  const validateStep = (currentStep: number) => {
+    if (currentStep === 1) {
+      const result = profileSchema.pick({ degree: true, year: true }).safeParse(formData)
+      if (!result.success) {
+        toast.error(result.error.issues[0].message)
+        return false
+      }
+    }
+    if (currentStep === 2) {
+      const result = profileSchema.pick({ skills: true, interests: true }).safeParse(formData)
+      if (!result.success) {
+        toast.error(result.error.issues[0].message)
+        return false
+      }
+    }
+    return true
+  }
+
+  const nextStep = () => {
+    if (validateStep(step)) {
+      setStep(prev => prev + 1)
+    }
+  }
   const prevStep = () => setStep(prev => prev - 1)
 
   const handleSubmit = async () => {
     if (!user) return
+
+    const validation = profileSchema.safeParse(formData)
+    if (!validation.success) {
+      toast.error(validation.error.issues[0].message)
+      return
+    }
+
     setLoading(true)
     try {
       const { error } = await supabase.from('profiles').insert({
