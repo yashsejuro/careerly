@@ -4,8 +4,23 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useAuth } from '@/lib/auth'
-import { ArrowRight, Compass, Target, Rocket, ClipboardCheck } from 'lucide-react'
+import {
+  ArrowRight,
+  Compass,
+  Target,
+  Rocket,
+  ClipboardCheck,
+  Briefcase,
+  GraduationCap,
+  Code,
+  Lightbulb,
+  TrendingUp,
+  Award,
+  BookOpen,
+  Zap
+} from 'lucide-react'
 import toast from 'react-hot-toast'
+import { motion } from 'framer-motion'
 
 export function LandingPage() {
   const { loginWithEmail, loginWithGoogle } = useAuth()
@@ -47,53 +62,140 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-background selection:bg-primary/20">
       {/* Navigation */}
-      <nav className="border-b bg-background/50 backdrop-blur-md sticky top-0 z-50">
+      <motion.nav
+        className="border-b bg-background/50 backdrop-blur-md sticky top-0 z-50"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+            <motion.div
+              className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center"
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.6 }}
+            >
               <Compass className="text-primary-foreground w-6 h-6" />
-            </div>
-            <span className="text-xl font-serif font-bold tracking-tight">Career Navigator</span>
+            </motion.div>
+            <span className="text-xl font-serif font-bold tracking-tight">Careerly</span>
           </div>
           <Button onClick={() => setIsLoginOpen(true)} variant="ghost" className="font-medium">
             Sign In
           </Button>
         </div>
-      </nav>
+      </motion.nav>
 
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-5xl lg:text-7xl font-serif font-bold leading-tight mb-6">
-              Navigate Your Career Path with <span className="text-primary">Confidence</span>
-            </h1>
-            <p className="text-xl text-muted-foreground mb-10 leading-relaxed">
+            <motion.h1
+              className="text-5xl lg:text-7xl font-serif font-bold leading-tight mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              Navigate Your Career Path with{' '}
+              <motion.span
+                className="gradient-text-animated"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+              >
+                Confidence
+              </motion.span>
+            </motion.h1>
+            <motion.p
+              className="text-xl text-muted-foreground mb-10 leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+            >
               Discover personalized roadmaps, analyze skill gaps, and track internships.
               Empowering college students to reach their full professional potential.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button onClick={() => setIsLoginOpen(true)} size="lg" className="h-14 px-8 text-lg rounded-full shadow-lg hover:scale-105 transition-transform">
-                Get Started for Free <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </div>
+            </motion.p>
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+            >
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button
+                  onClick={() => setIsLoginOpen(true)}
+                  size="lg"
+                  className="h-14 px-8 text-lg rounded-full shadow-lg glow-primary-hover"
+                >
+                  Get Started for Free <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
 
-        {/* Abstract Background Elements */}
+        {/* Floating Icons */}
+        <FloatingIcons />
+
+        {/* Animated Background Blobs */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full -z-10 opacity-10">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-primary rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary rounded-full blur-3xl" />
+          <motion.div
+            className="absolute top-0 left-0 w-96 h-96 bg-primary rounded-full blur-3xl"
+            animate={{
+              x: [0, 100, 0],
+              y: [0, 50, 0],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          <motion.div
+            className="absolute bottom-0 right-0 w-96 h-96 bg-primary rounded-full blur-3xl"
+            animate={{
+              x: [0, -100, 0],
+              y: [0, -50, 0],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 15,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          <motion.div
+            className="absolute top-1/2 left-1/2 w-64 h-64 bg-accent rounded-full blur-3xl"
+            animate={{
+              x: [-50, 50, -50],
+              y: [-50, 50, -50],
+              scale: [0.8, 1.2, 0.8],
+            }}
+            transition={{
+              duration: 18,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="py-24 bg-secondary/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+      <section className="relative py-24 bg-secondary/30 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
             <h2 className="text-4xl font-serif font-bold mb-4">Core MVP Features</h2>
             <p className="text-muted-foreground text-lg">Everything you need to jumpstart your career journey.</p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <FeatureCard
@@ -118,6 +220,9 @@ export function LandingPage() {
             />
           </div>
         </div>
+
+        {/* Floating Icons for Features Section */}
+        <FloatingIcons />
       </section>
 
       {/* Email Login Dialog */}
@@ -186,7 +291,7 @@ export function LandingPage() {
             <span className="text-lg font-serif font-bold">Career Navigator</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            © 2026 Career Navigator. Built for the next generation of professionals.
+            © 2026 Careerly. Built for the next generation of professionals.
           </p>
         </div>
       </footer>
@@ -196,10 +301,68 @@ export function LandingPage() {
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
-    <div className="bg-background p-8 rounded-3xl border shadow-sm hover:shadow-md transition-shadow">
-      <div className="mb-6">{icon}</div>
-      <h3 className="text-xl font-bold mb-3">{title}</h3>
+    <motion.div
+      className="glass-card p-8 rounded-3xl border border-primary/10 shadow-sm group cursor-pointer"
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.5 }}
+      whileHover={{
+        y: -8,
+        boxShadow: "0 20px 40px rgba(0, 191, 165, 0.2)",
+        transition: { type: "spring", stiffness: 300, damping: 20 }
+      }}
+    >
+      <motion.div
+        className="mb-6"
+        whileHover={{ scale: 1.1, rotate: 5 }}
+        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+      >
+        {icon}
+      </motion.div>
+      <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">{title}</h3>
       <p className="text-muted-foreground leading-relaxed">{description}</p>
+    </motion.div>
+  )
+}
+
+function FloatingIcons() {
+  const icons = [
+    { Icon: Briefcase, delay: 0, duration: 20, x: '10%', y: '20%' },
+    { Icon: GraduationCap, delay: 2, duration: 25, x: '80%', y: '15%' },
+    { Icon: Code, delay: 4, duration: 22, x: '15%', y: '70%' },
+    { Icon: Lightbulb, delay: 1, duration: 24, x: '85%', y: '65%' },
+    { Icon: TrendingUp, delay: 3, duration: 23, x: '50%', y: '10%' },
+    { Icon: Award, delay: 5, duration: 21, x: '25%', y: '45%' },
+    { Icon: BookOpen, delay: 2.5, duration: 26, x: '70%', y: '40%' },
+    { Icon: Zap, delay: 4.5, duration: 19, x: '40%', y: '80%' },
+  ]
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {icons.map(({ Icon, delay, duration, x, y }, index) => (
+        <motion.div
+          key={index}
+          className="absolute"
+          style={{ left: x, top: y }}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{
+            opacity: [0, 0.15, 0.15, 0],
+            scale: [0, 1, 1, 0],
+            y: [0, -30, -60, -90],
+            x: [0, Math.sin(index) * 20, Math.cos(index) * 20, 0],
+            rotate: [0, 360],
+          }}
+          transition={{
+            duration,
+            delay,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          <Icon className="w-12 h-12 text-primary" strokeWidth={1.5} />
+        </motion.div>
+      ))}
     </div>
   )
 }
