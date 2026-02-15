@@ -274,7 +274,7 @@ export function TrackerView() {
 
                     <div className="flex items-center gap-2">
                       {internship.notes && (
-                        <Button variant="ghost" size="icon" className="rounded-full" onClick={() => toast(internship.notes || '')}>
+                        <Button variant="ghost" size="icon" className="rounded-full" onClick={() => toast.success(internship.notes || 'No notes available')}>
                           <ClipboardList className="w-4 h-4" />
                         </Button>
                       )}
