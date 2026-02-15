@@ -1,166 +1,158 @@
 import { generateWithGroq } from './groq'
+import { supabase } from './supabaseClient'
 
 type WhereClause = { userId?: string }
-
-/**
- * SECURITY NOTICE
- * ===============
- * The previous implementation used window.localStorage to store data.
- * This was vulnerable to XSS attacks (Insecure Data Storage).
- *
- * We have switched to an in-memory storage mechanism.
- * PROS: Secure (data is not persisted on disk/browser storage).
- * CONS: Data is lost on page reload.
- *
- * This is a mock API. In a real application, use a secure backend.
- */
-
-type Store = {
-  profiles: any[]
-  internships: any[]
-  roadmaps: any[]
-}
-
-const memoryStore: Store = {
-  profiles: [],
-  internships: [],
-  roadmaps: [],
-}
 
 export const careerlyApi = {
   db: {
     profiles: {
       async exists({ where }: { where: WhereClause }): Promise<boolean> {
-        const all = this._all()
-        return all.some((p: any) => p.userId === where.userId)
+        if (!where.userId) return false
+        const { count, error } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', where.userId)
+
+        if (error) {
+          console.error('Error checking profile existence:', error)
+          return false
+        }
+        return (count || 0) > 0
       },
       async create(profile: any) {
-        const all = this._all()
-        const newProfile = { id: crypto.randomUUID(), ...profile }
-        all.push(newProfile)
-        localStorage.setItem('careerly_profiles', JSON.stringify(all))
+        const { userId, ...rest } = profile
+        const { error } = await supabase.from('profiles').insert([{
+          user_id: userId,
+          ...rest
+        }])
+        if (error) throw error
       },
       async list({ where, limit }: { where: WhereClause; limit?: number }) {
-        const all = this._all().filter((p: any) =>
-          where.userId ? p.userId === where.userId : true,
-        )
-        return typeof limit === 'number' ? all.slice(0, limit) : all
-      },
-      _all() {
-        try {
-          return JSON.parse(localStorage.getItem('careerly_profiles') || '[]')
-        } catch { return [] }
+        let query = supabase.from('profiles').select('*')
+        if (where.userId) query = query.eq('user_id', where.userId)
+        if (limit) query = query.limit(limit)
+
+        const { data, error } = await query
+        if (error) throw error
+        return (data || []).map((p: any) => ({ ...p, userId: p.user_id }))
       },
     },
     internships: {
       async count({ where }: { where: WhereClause }) {
-        const items = await this.list({ where })
-        return items.length
+        if (!where.userId) return 0
+        const { count, error } = await supabase
+          .from('internships')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', where.userId)
+        if (error) throw error
+        return count || 0
       },
       async list({ where }: { where: WhereClause }) {
-        const all = this._all().filter((p: any) =>
-          where.userId ? p.userId === where.userId : true,
-        )
-        return all
+        let query = supabase.from('internships').select('*')
+        if (where.userId) query = query.eq('user_id', where.userId)
+
+        const { data, error } = await query
+        if (error) throw error
+        return (data || []).map((i: any) => ({
+          ...i,
+          userId: i.user_id,
+          role: i.position,
+          date_applied: i.applied_date
+        }))
       },
       async create(internship: any) {
-        const all = this._all()
-        all.push({ id: crypto.randomUUID(), ...internship })
-        localStorage.setItem('careerly_internships', JSON.stringify(all))
+        const { userId, role, date_applied, ...rest } = internship
+        const { error } = await supabase.from('internships').insert([{
+          user_id: userId,
+          position: role,
+          applied_date: date_applied,
+          ...rest
+        }])
+        if (error) throw error
       },
       async delete(id: string) {
-        let all = this._all()
-        all = all.filter((p: any) => p.id !== id)
-        localStorage.setItem('careerly_internships', JSON.stringify(all))
-      },
-      _all() {
-        try {
-          return JSON.parse(localStorage.getItem('careerly_internships') || '[]')
-        } catch { return [] }
+        const { error } = await supabase.from('internships').delete().eq('id', id)
+        if (error) throw error
       },
     },
     skills: {
       async list({ where, limit }: { where: WhereClause; limit?: number }) {
-        const all = this._all().filter((p: any) =>
-          where.userId ? p.userId === where.userId : true,
-        )
-        return typeof limit === 'number' ? all.slice(0, limit) : all
+        let query = supabase.from('skills_analysis').select('*')
+        if (where.userId) query = query.eq('user_id', where.userId)
+        if (limit) query = query.limit(limit)
+
+        const { data, error } = await query
+        if (error) throw error
+        // Map the stored 'data' jsonb back to the top-level object, preserving id/userId
+        return (data || []).map((row: any) => ({ ...row.data, id: row.id, userId: row.user_id }))
       },
       async upsert(analysis: any) {
-        const all = this._all()
-        const idx = all.findIndex((a: any) => a.userId === analysis.userId)
-        if (idx >= 0) {
-          all[idx] = { ...all[idx], ...analysis }
-        } else {
-          all.push({ id: crypto.randomUUID(), ...analysis })
-        }
-        window.localStorage.setItem('careerly-skills', JSON.stringify(all))
-      },
-      _all() {
-        const raw = window.localStorage.getItem('careerly-skills')
-        if (!raw) return []
-        try {
-          return JSON.parse(raw)
-        } catch {
-          return []
-        }
+        const { userId, ...rest } = analysis
+        const { error } = await supabase.from('skills_analysis').upsert({
+          user_id: userId,
+          data: rest
+        }, { onConflict: 'user_id' })
+        if (error) throw error
       },
     },
     userProjects: {
       async list({ where }: { where: WhereClause }) {
-        const all = this._all().filter((p: any) =>
-          where.userId ? p.userId === where.userId : true,
-        )
-        return all
+        let query = supabase.from('user_projects').select('*')
+        if (where.userId) query = query.eq('user_id', where.userId)
+
+        const { data, error } = await query
+        if (error) throw error
+        return (data || []).map((row: any) => ({ ...row.data, id: row.id, userId: row.user_id, title: row.title, status: row.status }))
       },
       async create(project: any) {
-        const all = this._all()
-        const newProject = { ...project, id: project.id || crypto.randomUUID(), createdAt: new Date().toISOString() }
-        all.push(newProject)
-        localStorage.setItem('careerly_user_projects', JSON.stringify(all))
+        const { userId, title, status, ...rest } = project
+        const { error } = await supabase.from('user_projects').insert([{
+          user_id: userId,
+          title,
+          status: status || 'planned',
+          data: rest
+        }])
+        if (error) throw error
       },
       async update(id: string, updates: any) {
-        const all = this._all()
-        const idx = all.findIndex((p: any) => p.id === id)
-        if (idx >= 0) {
-          all[idx] = { ...all[idx], ...updates }
-          localStorage.setItem('careerly_user_projects', JSON.stringify(all))
-        }
+        // Fetch existing logic to merge properly since Supabase update replaces the whole JSONB column if targeted directly
+        const { data: existing, error: fetchError } = await supabase.from('user_projects').select('data, title, status').eq('id', id).single()
+        if (fetchError || !existing) return // or throw
+
+        const { title, status, ...rest } = updates
+        const newData = { ...existing.data, ...rest }
+
+        const { error } = await supabase.from('user_projects').update({
+          title: title || existing.title,
+          status: status || existing.status,
+          data: newData
+        }).eq('id', id)
+
+        if (error) throw error
       },
       async delete(id: string) {
-        let all = this._all()
-        all = all.filter((p: any) => p.id !== id)
-        localStorage.setItem('careerly_user_projects', JSON.stringify(all))
-      },
-      _all() {
-        try {
-          return JSON.parse(localStorage.getItem('careerly_user_projects') || '[]')
-        } catch { return [] }
+        const { error } = await supabase.from('user_projects').delete().eq('id', id)
+        if (error) throw error
       },
     },
     roadmaps: {
       async list({ where, limit }: { where: WhereClause; limit?: number }) {
-        const all = this._all().filter((p: any) =>
-          where.userId ? p.userId === where.userId : true,
-        )
-        return typeof limit === 'number' ? all.slice(0, limit) : all
+        let query = supabase.from('roadmaps').select('*')
+        if (where.userId) query = query.eq('user_id', where.userId)
+        if (limit) query = query.limit(limit)
+
+        const { data, error } = await query
+        if (error) throw error
+        return (data || []).map((row: any) => ({ ...row.data, id: row.id, userId: row.user_id, type: row.type }))
       },
       async upsert(roadmap: any) {
-        const all = this._all()
-        const idx = all.findIndex(
-          (r: any) => r.userId === roadmap.userId && r.type === roadmap.type,
-        )
-        if (idx >= 0) {
-          all[idx] = { ...all[idx], ...roadmap }
-        } else {
-          all.push({ id: crypto.randomUUID(), ...roadmap })
-        }
-        localStorage.setItem('careerly_roadmaps', JSON.stringify(all))
-      },
-      _all() {
-        try {
-          return JSON.parse(localStorage.getItem('careerly_roadmaps') || '[]')
-        } catch { return [] }
+        const { userId, type, ...rest } = roadmap
+        const { error } = await supabase.from('roadmaps').upsert({
+          user_id: userId,
+          type: type || 'career',
+          data: rest
+        }, { onConflict: 'user_id,type' })
+        if (error) throw error
       },
     },
   },

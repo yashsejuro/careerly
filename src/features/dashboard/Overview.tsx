@@ -3,7 +3,61 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth'
-import { Map, Target, Rocket, ChevronRight, Sparkles, Trophy, TrendingUp, AlertCircle, ArrowUpRight } from 'lucide-react'
+import { Map, Target, Rocket, ChevronRight, Sparkles, Trophy, TrendingUp, AlertCircle, ArrowUpRight, Code, Briefcase, Zap, Lightbulb, GraduationCap } from 'lucide-react'
+
+// ... (other components unchanged)
+
+function FloatingMicroIcons() {
+  const icons = [
+    // Top Left Cluster
+    { icon: Code, color: 'text-blue-500', bg: 'bg-blue-500/10', delay: 0, top: '-15%', left: '5%', size: 'w-8 h-8' },
+    { icon: Sparkles, color: 'text-yellow-400', bg: 'bg-yellow-400/10', delay: 1.5, top: '10%', left: '-8%', size: 'w-6 h-6' },
+
+    // Top Right Cluster
+    { icon: Lightbulb, color: 'text-amber-500', bg: 'bg-amber-500/10', delay: 0.5, top: '-20%', right: '10%', size: 'w-7 h-7' },
+
+    // Bottom Right Cluster
+    { icon: Rocket, color: 'text-emerald-500', bg: 'bg-emerald-500/10', delay: 2, bottom: '20%', right: '-8%', size: 'w-8 h-8' },
+    { icon: Zap, color: 'text-purple-500', bg: 'bg-purple-500/10', delay: 2.5, bottom: '-10%', right: '5%', size: 'w-6 h-6' },
+
+    // Bottom Left Cluster
+    { icon: Target, color: 'text-red-500', bg: 'bg-red-500/10', delay: 1, bottom: '10%', left: '-10%', size: 'w-7 h-7' },
+    { icon: GraduationCap, color: 'text-cyan-500', bg: 'bg-cyan-500/10', delay: 3, bottom: '-15%', left: '15%', size: 'w-6 h-6' },
+  ]
+
+  return (
+    <>
+      {icons.map((item, i) => (
+        <motion.div
+          key={i}
+          className={`absolute z-20 flex items-center justify-center rounded-2xl ${item.bg} backdrop-blur-sm shadow-sm border border-white/10`}
+          style={{
+            top: item.top,
+            left: item.left,
+            right: item.right,
+            bottom: item.bottom,
+            width: 'fit-content',
+            height: 'fit-content',
+            padding: '8px'
+          }}
+          animate={{
+            y: [0, -15, 0],
+            rotate: [0, 5, -5, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 4 + i, // Varied duration
+            repeat: Infinity,
+            delay: item.delay,
+            ease: "easeInOut"
+          }}
+        >
+          <item.icon className={`${item.size} ${item.color}`} strokeWidth={1.5} />
+        </motion.div>
+      ))}
+    </>
+  )
+}
 import { useDashboard } from './DashboardContext'
 import { careerlyApi } from '@/lib/api'
 import { ProfileOverviewResponse } from '@/types/roadmap'
@@ -331,38 +385,7 @@ function WelcomeSection({ user, profile }: any) {
   )
 }
 
-function FloatingMicroIcons() {
-  const icons = [
-    { icon: Sparkles, color: 'text-yellow-400', delay: 0, top: '-10%', left: '10%' },
-    { icon: Rocket, color: 'text-primary', delay: 2, top: '40%', right: '-5%' },
-    { icon: Target, color: 'text-purple-400', delay: 4, bottom: '-5%', left: '20%' },
-  ]
 
-  return (
-    <>
-      {icons.map((item, i) => (
-        <motion.div
-          key={i}
-          className={`absolute z-20 ${item.color}`}
-          style={{ top: item.top, left: item.left, right: item.right, bottom: item.bottom }}
-          animate={{
-            y: [0, -10, 0],
-            opacity: [0.5, 1, 0.5],
-            scale: [0.8, 1, 0.8],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            delay: item.delay,
-            ease: "easeInOut"
-          }}
-        >
-          <item.icon className="w-4 h-4 shadow-sm" />
-        </motion.div>
-      ))}
-    </>
-  )
-}
 
 function Label({ className, children }: any) {
   return <label className={className}>{children}</label>

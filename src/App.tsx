@@ -1,12 +1,14 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { LandingPage } from './pages/LandingPage'
 import { OnboardingPage } from './pages/OnboardingPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { AuthCallbackPage } from './pages/AuthCallbackPage'
+import NotFoundPage, { ErrorBoundaryPage } from './pages/ErrorPages'
 import { useState, useEffect } from 'react'
 import { Spinner } from './components/ui/spinner'
 import { useAuth } from './lib/auth'
 import { supabase } from './lib/supabaseClient'
+import { ErrorBoundary } from 'react-error-boundary'
 
 function MainApp() {
   const { isAuthenticated, isLoading, user } = useAuth()
@@ -15,26 +17,35 @@ function MainApp() {
 
   useEffect(() => {
     async function checkProfile() {
-      if (isAuthenticated && user) {
-        try {
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('user_id', user.id)
-            .limit(1)
+      // If not authenticated, we don't need to check profile
+      if (!isAuthenticated || !user) {
+        setCheckingProfile(false)
+        return
+      }
 
-          if (error) throw error
-          setHasProfile((data?.length ?? 0) > 0)
-        } catch (error) {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1)
+
+        if (error) {
           console.error('Error checking profile:', error)
+          // In case of error (e.g. network), we might want to retry or show error
+          // For now, assume no profile or let the error boundary handle catastrophic failures if we threw
           setHasProfile(false)
-        } finally {
-          setCheckingProfile(false)
+        } else {
+          setHasProfile((data?.length ?? 0) > 0)
         }
-      } else {
+      } catch (error) {
+        console.error('Unexpected error checking profile:', error)
+        setHasProfile(false)
+      } finally {
         setCheckingProfile(false)
       }
     }
+
     checkProfile()
   }, [isAuthenticated, user])
 
@@ -59,10 +70,12 @@ function MainApp() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/auth/callback" element={<AuthCallbackPage />} />
-      <Route path="/" element={<MainApp />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <ErrorBoundary FallbackComponent={ErrorBoundaryPage} onReset={() => window.location.reload()}>
+      <Routes>
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route path="/" element={<MainApp />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </ErrorBoundary>
   )
 }

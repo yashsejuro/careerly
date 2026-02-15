@@ -26,3 +26,5 @@ dist-ssr
 REFACTORING_SUMMARY.md
 IMPROVEMENT_PLAN.md
 IMPROVEMENTS_IMPLEMENTED.md
+supabase_schema.sql
+supabase_migration.sql
