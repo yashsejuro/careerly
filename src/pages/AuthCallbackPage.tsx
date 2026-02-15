@@ -9,27 +9,35 @@ export function AuthCallbackPage() {
 
     useEffect(() => {
         const handleCallback = async () => {
-            try {
-                // Get the session from the URL hash
-                const { error } = await supabase.auth.getSession()
-
-                if (error) {
-                    console.error('Auth callback error:', error)
-                    toast.error('Authentication failed. Please try again.')
-                    navigate('/')
-                    return
-                }
-
-                // Redirect to home - the auth context will handle the rest
+            // Check if we already have a session, if so, just go home
+            const { data: { session } } = await supabase.auth.getSession()
+            if (session) {
                 navigate('/')
-            } catch (error) {
-                console.error('Unexpected error during auth callback:', error)
-                toast.error('An unexpected error occurred during login.')
+                return
+            }
+
+            // If no session, wait for the hash to be processed or show error
+            const { error } = await supabase.auth.getSession()
+
+            if (error) {
+                console.error('Auth callback error:', error)
+                toast.error('Authentication failed. Please try again.')
                 navigate('/')
             }
         }
 
+        // Listen for auth state changes to catch the 'SIGNED_IN' event
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                navigate('/')
+            }
+        })
+
         handleCallback()
+
+        return () => {
+            subscription.unsubscribe()
+        }
     }, [navigate])
 
     return (
