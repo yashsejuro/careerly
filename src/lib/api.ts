@@ -106,6 +106,38 @@ export const careerlyApi = {
         }
       },
     },
+    userProjects: {
+      async list({ where }: { where: WhereClause }) {
+        const all = this._all().filter((p: any) =>
+          where.userId ? p.userId === where.userId : true,
+        )
+        return all
+      },
+      async create(project: any) {
+        const all = this._all()
+        const newProject = { ...project, id: project.id || crypto.randomUUID(), createdAt: new Date().toISOString() }
+        all.push(newProject)
+        localStorage.setItem('careerly_user_projects', JSON.stringify(all))
+      },
+      async update(id: string, updates: any) {
+        const all = this._all()
+        const idx = all.findIndex((p: any) => p.id === id)
+        if (idx >= 0) {
+          all[idx] = { ...all[idx], ...updates }
+          localStorage.setItem('careerly_user_projects', JSON.stringify(all))
+        }
+      },
+      async delete(id: string) {
+        let all = this._all()
+        all = all.filter((p: any) => p.id !== id)
+        localStorage.setItem('careerly_user_projects', JSON.stringify(all))
+      },
+      _all() {
+        try {
+          return JSON.parse(localStorage.getItem('careerly_user_projects') || '[]')
+        } catch { return [] }
+      },
+    },
     roadmaps: {
       async list({ where, limit }: { where: WhereClause; limit?: number }) {
         const all = this._all().filter((p: any) =>

@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabaseClient'
 import { Spinner } from '@/components/ui/spinner'
+import toast from 'react-hot-toast'
 
 export function AuthCallbackPage() {
     const navigate = useNavigate()
@@ -14,6 +15,7 @@ export function AuthCallbackPage() {
 
                 if (error) {
                     console.error('Auth callback error:', error)
+                    toast.error('Authentication failed. Please try again.')
                     navigate('/')
                     return
                 }
@@ -22,6 +24,7 @@ export function AuthCallbackPage() {
                 navigate('/')
             } catch (error) {
                 console.error('Unexpected error during auth callback:', error)
+                toast.error('An unexpected error occurred during login.')
                 navigate('/')
             }
         }

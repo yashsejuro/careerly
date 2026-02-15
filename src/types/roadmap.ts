@@ -53,6 +53,16 @@ export interface ProjectRecommendationsResponse {
     projects: ProjectRecommendation[];
 }
 
+export type UserProjectStatus = 'To Do' | 'In Progress' | 'Review' | 'Done';
+
+export interface UserProject extends ProjectRecommendation {
+    id: string;
+    userId: string;
+    status: UserProjectStatus;
+    notes?: string;
+    createdAt: string;
+}
+
 // 4. Profile Overview Types
 export interface ProfileOverviewResponse {
     summary: string;

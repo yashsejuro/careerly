@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react'
+
+import { useState } from 'react'
 import { useAuth } from '@/lib/auth'
+import { JDAnalyzer } from '@/features/tools/JDAnalyzer'
 import {
   Compass,
   LayoutDashboard,
@@ -11,7 +13,8 @@ import {
   Menu,
   X,
   User as UserIcon,
-  Sparkles
+  Sparkles,
+  ScanSearch
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Overview } from '@/features/dashboard/Overview'
@@ -20,11 +23,10 @@ import { SkillsView } from '@/features/roadmap/SkillsView'
 import { ProjectsView } from '@/features/roadmap/ProjectsView'
 import { TrackerView } from '@/features/tracker/TrackerView'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider } from '@/components/ui/sidebar'
 import { DashboardProvider } from '@/features/dashboard/DashboardContext'
 import { motion } from 'framer-motion'
 
-type View = 'overview' | 'roadmap' | 'skills' | 'projects' | 'tracker'
+type View = 'overview' | 'roadmap' | 'skills' | 'projects' | 'tracker' | 'jd-scanner'
 
 export function DashboardPage() {
   const { user, logout } = useAuth()
@@ -37,6 +39,7 @@ export function DashboardPage() {
     { id: 'skills', label: 'Skill Gap', icon: Target },
     { id: 'projects', label: 'Projects', icon: Rocket },
     { id: 'tracker', label: 'Internships', icon: ClipboardCheck },
+    { id: 'jd-scanner', label: 'JD Scanner', icon: ScanSearch },
   ]
 
   const renderContent = () => {
@@ -46,6 +49,7 @@ export function DashboardPage() {
       case 'skills': return <SkillsView />
       case 'projects': return <ProjectsView />
       case 'tracker': return <TrackerView />
+      case 'jd-scanner': return <JDAnalyzer />
       default: return <Overview setActiveView={setActiveView} />
     }
   }
