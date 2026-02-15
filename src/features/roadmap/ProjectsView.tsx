@@ -1,16 +1,17 @@
+
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth'
 import { careerlyApi } from '@/lib/api'
-import { Rocket, Sparkles, Code2, Layers, Cpu, ArrowUpRight } from 'lucide-react'
+import { Rocket, Sparkles, Code2, Layers, Cpu, ArrowUpRight, Users, Trophy, Star } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
-import { ProjectSuggestion, ProjectSuggestions } from '@/types/roadmap'
+import { ProjectRecommendation, ProjectRecommendationsResponse } from '@/types/roadmap'
 
 export function ProjectsView() {
   const { user } = useAuth()
-  const [projects, setProjects] = useState<ProjectSuggestion[]>([])
+  const [projects, setProjects] = useState<ProjectRecommendation[]>([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
 
@@ -41,19 +42,29 @@ export function ProjectsView() {
       if (profiles.length === 0) return
       const profile = profiles[0]
 
-      const prompt = `Suggest 3 unique and impressive portfolio project ideas for this profile:
-Target Career: ${profile.goalCareer}
-Current Skills: ${profile.skills}
-Interests: ${profile.interests}
+      const prompt = `Student Profile:
 
-Each project should include:
-1. A catchy name.
-2. A clear description.
-3. Tech stack to use.
-4. Key features to implement.
-5. Why it will impress recruiters for the ${profile.goalCareer} role.`
+Career Path: ${profile.goalCareer}
+Skills: ${profile.skills}
+Experience Level: Intermediate (College Student)
 
-      const { object } = await careerlyApi.ai.generateObject({
+Return JSON in this format:
+
+{
+  "projects": [
+    {
+      "title": "",
+      "problem_statement": "",
+      "target_users": [],
+      "tech_stack": [],
+      "core_features": [],
+      "advanced_features": [],
+      "resume_value": ""
+    }
+  ]
+}`
+
+      const { object } = await careerlyApi.ai.generateObject<ProjectRecommendationsResponse>({
         prompt,
         schema: {
           type: 'object',
@@ -63,12 +74,13 @@ Each project should include:
               items: {
                 type: 'object',
                 properties: {
-                  name: { type: 'string' },
-                  description: { type: 'string' },
-                  techStack: { type: 'array', items: { type: 'string' } },
-                  features: { type: 'array', items: { type: 'string' } },
-                  impact: { type: 'string' },
-                  difficulty: { type: 'string', enum: ['Beginner', 'Intermediate', 'Advanced'] }
+                  title: { type: 'string' },
+                  problem_statement: { type: 'string' },
+                  target_users: { type: 'array', items: { type: 'string' } },
+                  tech_stack: { type: 'array', items: { type: 'string' } },
+                  core_features: { type: 'array', items: { type: 'string' } },
+                  advanced_features: { type: 'array', items: { type: 'string' } },
+                  resume_value: { type: 'string' },
                 }
               }
             }
@@ -77,7 +89,7 @@ Each project should include:
         }
       })
 
-      setProjects((object as ProjectSuggestions).projects)
+      setProjects(object.projects)
     } catch (error) {
       console.error('Error generating projects:', error)
       toast.error('Failed to generate project recommendations.')
@@ -101,24 +113,26 @@ Each project should include:
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {projects.map((project: ProjectSuggestion, i: number) => (
-          <Card key={i} className="rounded-3xl border shadow-sm flex flex-col hover:shadow-xl transition-all group overflow-hidden">
-            <div className="h-32 bg-primary/5 flex items-center justify-center border-b group-hover:bg-primary/10 transition-colors">
-              <div className="w-16 h-16 bg-background rounded-2xl flex items-center justify-center shadow-sm border border-primary/10 group-hover:scale-110 transition-transform">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {projects.map((project, i) => (
+          <Card key={i} className="rounded-3xl border shadow-sm flex flex-col hover:shadow-xl transition-all group overflow-hidden bg-background">
+            <div className="h-32 bg-primary/5 flex items-center justify-center border-b group-hover:bg-primary/10 transition-colors relative">
+              <div className="w-16 h-16 bg-background rounded-2xl flex items-center justify-center shadow-sm border border-primary/10 group-hover:scale-110 transition-transform z-10">
                 {i === 0 ? <Code2 className="w-8 h-8 text-primary" /> : i === 1 ? <Layers className="w-8 h-8 text-primary" /> : <Cpu className="w-8 h-8 text-primary" />}
+              </div>
+              <div className="absolute top-4 right-4 flex -space-x-1">
+                {project.target_users?.slice(0, 3).map((u, k) => (
+                  <div key={k} className="w-6 h-6 rounded-full bg-secondary border border-background flex items-center justify-center text-[10px]" title={u}>
+                    <Users className="w-3 h-3" />
+                  </div>
+                ))}
               </div>
             </div>
 
             <CardHeader>
-              <div className="flex justify-between items-start gap-2 mb-2">
-                <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${project.difficulty === 'Advanced' ? 'bg-orange-100 text-orange-600' : project.difficulty === 'Intermediate' ? 'bg-primary/10 text-primary' : 'bg-green-100 text-green-600'}`}>
-                  {project.difficulty}
-                </span>
-              </div>
-              <CardTitle className="text-xl line-clamp-1">{project.name}</CardTitle>
-              <CardDescription className="line-clamp-3 text-sm min-h-[60px]">
-                {project.description}
+              <CardTitle className="text-xl line-clamp-1">{project.title}</CardTitle>
+              <CardDescription className="line-clamp-3 text-sm min-h-[60px] italic">
+                "{project.problem_statement}"
               </CardDescription>
             </CardHeader>
 
@@ -126,22 +140,37 @@ Each project should include:
               <div className="space-y-2">
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Tech Stack</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {project.techStack.map((tech: string, j: number) => (
+                  {project.tech_stack.map((tech: string, j: number) => (
                     <span key={j} className="text-xs bg-secondary px-2 py-1 rounded-md font-medium">{tech}</span>
                   ))}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Key Features</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Features</p>
                 <ul className="text-xs space-y-1 text-muted-foreground">
-                  {project.features.slice(0, 3).map((feat: string, j: number) => (
+                  {project.core_features.slice(0, 2).map((feat: string, j: number) => (
                     <li key={j} className="flex gap-2">
                       <span className="text-primary">•</span>
                       <span className="line-clamp-1">{feat}</span>
                     </li>
                   ))}
+                  {project.advanced_features.slice(0, 1).map((feat: string, j: number) => (
+                    <li key={j} className="flex gap-2">
+                      <span className="text-primary font-bold">•</span>
+                      <span className="line-clamp-1 font-semibold text-primary">{feat} (Advanced)</span>
+                    </li>
+                  ))}
                 </ul>
+              </div>
+
+              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-xl border border-green-100 dark:border-green-900/50">
+                <p className="text-[10px] uppercase tracking-wider font-bold text-green-700 dark:text-green-400 flex items-center gap-1 mb-1">
+                  <Trophy className="w-3 h-3" /> Resume Value
+                </p>
+                <p className="text-xs text-green-800 dark:text-green-300 leading-tight">
+                  {project.resume_value}
+                </p>
               </div>
             </CardContent>
 
@@ -152,22 +181,6 @@ Each project should include:
             </CardFooter>
           </Card>
         ))}
-      </div>
-
-      <div className="bg-gradient-to-r from-primary to-primary/80 rounded-3xl p-8 text-primary-foreground shadow-xl shadow-primary/20">
-        <div className="flex flex-col md:flex-row items-center gap-8">
-          <div className="flex-1 space-y-4">
-            <h3 className="text-2xl font-serif font-bold italic">Why these projects?</h3>
-            <p className="opacity-90 leading-relaxed text-sm">
-              Recruiters don't just look for code; they look for problem-solving skills and the ability to build meaningful applications. These projects were chosen by our AI to demonstrate exactly those traits in your specific target field.
-            </p>
-          </div>
-          <div className="shrink-0">
-            <div className="w-24 h-24 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30">
-              <Sparkles className="w-10 h-10" />
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   )

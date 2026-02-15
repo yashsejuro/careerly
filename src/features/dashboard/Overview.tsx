@@ -1,14 +1,73 @@
+
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth'
-import { Map, Target, Rocket, ChevronRight, Sparkles, Trophy } from 'lucide-react'
+import { Map, Target, Rocket, ChevronRight, Sparkles, Trophy, TrendingUp, AlertCircle } from 'lucide-react'
 import { useDashboard } from './DashboardContext'
+import { careerlyApi } from '@/lib/api'
+import { ProfileOverviewResponse } from '@/types/roadmap'
 
 export function Overview({ setActiveView }: { setActiveView: (view: any) => void }) {
   const { user } = useAuth()
   const { profile, internshipCount } = useDashboard()
+  const [overview, setOverview] = useState<ProfileOverviewResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    async function fetchOverview() {
+      if (!user || !profile) return
+
+      const cacheKey = `careerly_overview_${user.id}`
+      const cached = localStorage.getItem(cacheKey)
+      if (cached) {
+        setOverview(JSON.parse(cached))
+        return
+      }
+
+      setLoading(true)
+      try {
+        const prompt = `Student Profile:
+
+Degree: ${profile.degree}
+Year: ${profile.year}
+Skills: ${profile.skills}
+Interests: ${profile.interests}
+
+Return JSON:
+
+{
+  "summary": "",
+  "strengths": [],
+  "weaknesses": [],
+  "recommended_focus": ""
+}`
+        const { object } = await careerlyApi.ai.generateObject<ProfileOverviewResponse>({
+          prompt,
+          schema: {
+            type: 'object',
+            properties: {
+              summary: { type: 'string' },
+              strengths: { type: 'array', items: { type: 'string' } },
+              weaknesses: { type: 'array', items: { type: 'string' } },
+              recommended_focus: { type: 'string' }
+            },
+            required: ['summary', 'strengths', 'weaknesses', 'recommended_focus']
+          }
+        })
+        setOverview(object)
+        localStorage.setItem(cacheKey, JSON.stringify(object))
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchOverview()
+  }, [user, profile])
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       {/* Welcome Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -23,21 +82,21 @@ export function Overview({ setActiveView }: { setActiveView: (view: any) => void
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard 
+        <StatCard
           icon={<Map className="w-5 h-5 text-primary" />}
           title="Roadmap Progress"
           value="Step 2 of 8"
           description="Build your first project"
           onClick={() => setActiveView('roadmap')}
         />
-        <StatCard 
+        <StatCard
           icon={<Target className="w-5 h-5 text-primary" />}
           title="Skills to Learn"
           value="4 Skills"
           description="Focusing on Backend"
           onClick={() => setActiveView('skills')}
         />
-        <StatCard 
+        <StatCard
           icon={<Rocket className="w-5 h-5 text-primary" />}
           title="Internships"
           value={internshipCount.toString()}
@@ -48,7 +107,7 @@ export function Overview({ setActiveView }: { setActiveView: (view: any) => void
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Profile Summary */}
-        <Card className="rounded-3xl border-none shadow-sm bg-secondary/20">
+        <Card className="rounded-3xl border-none shadow-sm bg-secondary/20 h-full">
           <CardHeader>
             <CardTitle>Professional Profile</CardTitle>
             <CardDescription>Your current academic and career status.</CardDescription>
@@ -73,8 +132,8 @@ export function Overview({ setActiveView }: { setActiveView: (view: any) => void
           </CardContent>
         </Card>
 
-        {/* AI Suggestions Box */}
-        <Card className="rounded-3xl border-2 border-primary/20 shadow-lg shadow-primary/5 bg-gradient-to-br from-primary/5 to-transparent">
+        {/* AI Suggestions Box (Dynamic) */}
+        <Card className="rounded-3xl border-2 border-primary/20 shadow-lg shadow-primary/5 bg-gradient-to-br from-primary/5 to-transparent flex flex-col">
           <CardHeader>
             <div className="flex items-center gap-2 mb-2">
               <div className="p-1.5 bg-primary rounded-lg">
@@ -84,26 +143,48 @@ export function Overview({ setActiveView }: { setActiveView: (view: any) => void
             </div>
             <CardDescription>Generated based on your interests and target role.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-4 bg-background/50 rounded-2xl border border-primary/10">
-              <p className="text-sm leading-relaxed italic text-foreground/90">
-                "Given your interest in {profile?.interests || 'tech'}, consider learning Docker next. It's a highly requested skill for {profile?.goal_career || 'modern developers'} and will make your portfolio projects much more professional."
-              </p>
-            </div>
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">Top Recommendations</h4>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-3 text-sm group cursor-pointer" onClick={() => setActiveView('projects')}>
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                  <span>Build a full-stack dashboard project</span>
-                  <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-                </li>
-                <li className="flex items-center gap-3 text-sm group cursor-pointer" onClick={() => setActiveView('skills')}>
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                  <span>Bridge your gap in REST API design</span>
-                  <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-                </li>
-              </ul>
+          <CardContent className="space-y-4 flex-1">
+            {loading ? (
+              <div className="space-y-3 animate-pulse">
+                <div className="h-4 bg-primary/10 rounded w-3/4"></div>
+                <div className="h-4 bg-primary/10 rounded w-full"></div>
+                <div className="h-4 bg-primary/10 rounded w-1/2"></div>
+              </div>
+            ) : overview ? (
+              <>
+                <div className="p-4 bg-background/50 rounded-2xl border border-primary/10">
+                  <p className="text-sm leading-relaxed italic text-foreground/90">
+                    "{overview.summary}"
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-start gap-2">
+                    <TrendingUp className="w-4 h-4 text-green-600 mt-1" />
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Top Strength</h4>
+                      <p className="text-sm font-medium">{overview.strengths[0]}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-orange-500 mt-1" />
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Focus Area</h4>
+                      <p className="text-sm font-medium">{overview.recommended_focus}</p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="p-4 text-sm text-muted-foreground">
+                Complete your profile to get AI advice.
+              </div>
+            )}
+
+            <div className="pt-4 mt-auto">
+              <Button variant="link" className="p-0 h-auto gap-1 text-primary" onClick={() => setActiveView('roadmap')}>
+                View Full Roadmap <ChevronRight className="w-4 h-4" />
+              </Button>
             </div>
           </CardContent>
         </Card>

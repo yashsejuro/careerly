@@ -1,3 +1,5 @@
+import { generateWithGroq } from './groq'
+
 type WhereClause = { userId?: string }
 
 /**
@@ -126,38 +128,86 @@ export const careerlyApi = {
       prompt: string
       schema?: any
     }): Promise<{ object: T }> {
-      // Simple deterministic mock so the UI has data.
-      let fallback: any = {
-        steps: [
-          { title: 'Learn HTML, CSS, JS', duration: '2-4 weeks' },
-          { title: 'Build 2–3 small projects', duration: '4-6 weeks' },
-          { title: 'Apply for internships', duration: 'ongoing' },
-        ],
+      // 1. Try Real AI (Groq)
+      try {
+        if (import.meta.env.VITE_GROQ_API_KEY) {
+          const result = await generateWithGroq<T>(prompt, schema)
+          return { object: result }
+        }
+      } catch (e) {
+        console.warn('Groq AI failed, falling back to mock:', e)
+        // Fallthrough to mock data below
       }
 
-      // If schema looks like skill analysis, return compatible mock
-      if (schema?.properties?.matchingSkills) {
+      // 2. Fallback Mock Data (Robustness)
+      // 2. Fallback Mock Data (Robustness)
+      let fallback: any = {}
+
+      // A. Roadmap Fallback
+      if (schema?.properties?.career_paths) {
         fallback = {
-            matchingSkills: ['JavaScript', 'React'],
-            gapSkills: [
-                {
-                    skill: 'TypeScript',
-                    importance: 'high',
-                    reason: 'Essential for modern web dev',
-                    resources: ['TypeScript Docs', 'Total TypeScript']
-                },
-                {
-                    skill: 'Node.js',
-                    importance: 'medium',
-                    reason: 'Backend knowledge is useful',
-                    resources: ['Node.js Docs']
-                }
-            ]
+          career_paths: [
+            {
+              title: "Frontend Developer",
+              description: "Focus on building user interfaces and web experiences.",
+              why_fit: "Matches your interest in visual design and React skills.",
+              skills: {
+                must_have: ["React", "CSS", "TypeScript"],
+                good_to_have: ["Figma", "Next.js"]
+              },
+              learning_roadmap: [
+                { step: 1, title: "Advanced React", description: "Master hooks and context." },
+                { step: 2, title: "State Management", description: "Learn Redux or Zustand." }
+              ],
+              entry_roles: ["Junior Frontend Dev", "UI Engineer"],
+              timeline_months: 6
+            }
+          ],
+          next_30_days_focus: "Build a complex portfolio project."
+        }
+      }
+      // B. Skills Fallback
+      else if (schema?.properties?.missing_skills) {
+        fallback = {
+          missing_skills: [
+            {
+              skill: "TypeScript",
+              priority: "High",
+              why_important: "Standard for modern web dev safety.",
+              how_to_learn: "Official docs & Total TypeScript course.",
+              mini_task: "Convert one JS file to TS."
+            }
+          ],
+          overall_gap_summary: "You are strong in logic but need typed safety."
+        }
+      }
+      // C. Projects Fallback
+      else if (schema?.properties?.projects) {
+        fallback = {
+          projects: [
+            {
+              title: "E-Commerce Dashboard",
+              problem_statement: "Small businesses need to track inventory.",
+              target_users: ["Shop owners"],
+              tech_stack: ["React", "Supabase", "Tailwind"],
+              core_features: ["Inventory CRUD", "Sales Charts"],
+              advanced_features: ["AI Sales Prediction"],
+              resume_value: "Demonstrates full-stack ability."
+            }
+          ]
+        }
+      }
+      // D. Overview Fallback
+      else if (schema?.properties?.summary) {
+        fallback = {
+          summary: "You are on track but need more backend exposure.",
+          strengths: ["Frontend", "Design"],
+          weaknesses: ["Database Design"],
+          recommended_focus: "Build a full-stack CRUD app."
         }
       }
 
-      console.info('[careerlyApi.ai] Mock generateObject for prompt:', prompt)
-      console.info('[careerlyApi.ai] Schema:', schema)
+      console.info('[careerlyApi.ai] using Fallback Mock for:', prompt)
       return { object: fallback }
     },
   },
