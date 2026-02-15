@@ -14,5 +14,17 @@ export default defineConfig({
     strictPort: true,
     host: true,
     allowedHosts: true,
+  },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['react', 'react-dom'],
+          'ui': ['framer-motion', 'lucide-react', 'clsx', 'tailwind-merge'],
+          'db': ['@supabase/supabase-js']
+        }
+      }
+    }
   }
 });
