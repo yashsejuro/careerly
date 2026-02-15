@@ -9,6 +9,7 @@ import { Spinner } from './components/ui/spinner'
 import { useAuth } from './lib/auth'
 import { supabase } from './lib/supabaseClient'
 import { ErrorBoundary } from 'react-error-boundary'
+import { SpeedInsights } from "@vercel/speed-insights/react"
 
 function MainApp() {
   const { isAuthenticated, isLoading, user } = useAuth()
@@ -76,6 +77,7 @@ export default function App() {
         <Route path="/" element={<MainApp />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      <SpeedInsights />
     </ErrorBoundary>
   )
 }
