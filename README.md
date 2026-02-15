@@ -71,8 +71,8 @@ It analyzes:
 ```txt
 Frontend   → Next.js, Tailwind CSS
 Backend    → Node.js (API Routes)
-Database   → MongoDB Atlas
-AI Layer   → Google Gemini / LLM APIs
+Database   → Supabase
+AI Layer   → Groq
 Hosting    → Vercel
 ```
 ### Who Is This For?
