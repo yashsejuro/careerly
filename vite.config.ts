@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react({ jsxRuntime: 'automatic' })],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -14,17 +14,5 @@ export default defineConfig({
     strictPort: true,
     host: true,
     allowedHosts: true,
-  },
-  build: {
-    chunkSizeWarningLimit: 1000,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'vendor': ['react', 'react-dom'],
-          'ui': ['framer-motion', 'lucide-react', 'clsx', 'tailwind-merge'],
-          'db': ['@supabase/supabase-js']
-        }
-      }
-    }
   }
 });

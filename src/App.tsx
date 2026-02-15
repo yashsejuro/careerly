@@ -10,6 +10,7 @@ import { useAuth } from './lib/auth'
 import { supabase } from './lib/supabaseClient'
 import { ErrorBoundary } from 'react-error-boundary'
 import { SpeedInsights } from "@vercel/speed-insights/react"
+import { Analytics } from "@vercel/analytics/react"
 
 function MainApp() {
   const { isAuthenticated, isLoading, user } = useAuth()
@@ -78,6 +79,7 @@ export default function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <SpeedInsights />
+      <Analytics />
     </ErrorBoundary>
   )
 }
