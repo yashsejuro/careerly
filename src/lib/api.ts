@@ -36,7 +36,9 @@ export const careerlyApi = {
       },
       async create(profile: any) {
         const all = this._all()
-        all.push({ id: crypto.randomUUID(), ...profile })
+        const newProfile = { id: crypto.randomUUID(), ...profile }
+        all.push(newProfile)
+        localStorage.setItem('careerly_profiles', JSON.stringify(all))
       },
       async list({ where, limit }: { where: WhereClause; limit?: number }) {
         const all = this._all().filter((p: any) =>
@@ -45,7 +47,9 @@ export const careerlyApi = {
         return typeof limit === 'number' ? all.slice(0, limit) : all
       },
       _all() {
-        return memoryStore.profiles
+        try {
+          return JSON.parse(localStorage.getItem('careerly_profiles') || '[]')
+        } catch { return [] }
       },
     },
     internships: {
@@ -62,12 +66,17 @@ export const careerlyApi = {
       async create(internship: any) {
         const all = this._all()
         all.push({ id: crypto.randomUUID(), ...internship })
+        localStorage.setItem('careerly_internships', JSON.stringify(all))
       },
       async delete(id: string) {
-        memoryStore.internships = memoryStore.internships.filter((p: any) => p.id !== id)
+        let all = this._all()
+        all = all.filter((p: any) => p.id !== id)
+        localStorage.setItem('careerly_internships', JSON.stringify(all))
       },
       _all() {
-        return memoryStore.internships
+        try {
+          return JSON.parse(localStorage.getItem('careerly_internships') || '[]')
+        } catch { return [] }
       },
     },
     skills: {
@@ -114,9 +123,12 @@ export const careerlyApi = {
         } else {
           all.push({ id: crypto.randomUUID(), ...roadmap })
         }
+        localStorage.setItem('careerly_roadmaps', JSON.stringify(all))
       },
       _all() {
-        return memoryStore.roadmaps
+        try {
+          return JSON.parse(localStorage.getItem('careerly_roadmaps') || '[]')
+        } catch { return [] }
       },
     },
   },

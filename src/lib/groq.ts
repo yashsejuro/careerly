@@ -30,7 +30,7 @@ export async function generateWithGroq<T>(prompt: string, schema: any): Promise<
                 'Authorization': `Bearer ${GROQ_API_KEY}`
             },
             body: JSON.stringify({
-                model: 'llama3-70b-8192', // Fast, smart, and free tier friendly
+                model: 'llama-3.3-70b-versatile', // Updated to latest stable model
                 messages: [
                     {
                         role: 'system',

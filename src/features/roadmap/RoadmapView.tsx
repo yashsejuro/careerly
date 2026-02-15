@@ -54,8 +54,18 @@ export function RoadmapView() {
       })
 
       if (profiles.length === 0) {
-        toast.error('Profile not found. Please complete onboarding.')
-        return
+        // Auto-create a default profile for better DX
+        const defaultProfile = {
+          userId: user.id,
+          degree: 'Computer Science',
+          year: '2nd Year',
+          skills: 'JavaScript, React, Basic Python',
+          interests: 'Web Development, AI',
+          goal_career: 'Software Engineer'
+        }
+        await careerlyApi.db.profiles.create(defaultProfile)
+        profiles.push(defaultProfile)
+        toast.success('Created a default profile to get you started!')
       }
 
       const profile = profiles[0]
@@ -208,8 +218,8 @@ Return JSON in this exact format:
             key={idx}
             onClick={() => setSelectedPathIndex(idx)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedPathIndex === idx
-                ? 'bg-primary text-primary-foreground shadow-md'
-                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              ? 'bg-primary text-primary-foreground shadow-md'
+              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
               }`}
           >
             {path.title}
