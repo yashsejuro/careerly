@@ -8,35 +8,45 @@ export function AuthCallbackPage() {
     const navigate = useNavigate()
 
     useEffect(() => {
-        const handleCallback = async () => {
-            // Check if we already have a session, if so, just go home
-            const { data: { session } } = await supabase.auth.getSession()
-            if (session) {
-                navigate('/')
-                return
-            }
-
-            // If no session, wait for the hash to be processed or show error
-            const { error } = await supabase.auth.getSession()
-
-            if (error) {
-                console.error('Auth callback error:', error)
-                toast.error('Authentication failed. Please try again.')
-                navigate('/')
-            }
+        // 1. Handle explicit errors in URL (e.g. ?error=access_denied&error_description=...)
+        const params = new URLSearchParams(window.location.search)
+        const error = params.get('error')
+        const errorDescription = params.get('error_description')
+        if (error) {
+            console.error('Auth callback error from URL:', error, errorDescription)
+            toast.error(errorDescription || 'Authentication failed.')
+            navigate('/')
+            return
         }
 
-        // Listen for auth state changes to catch the 'SIGNED_IN' event
+        // 2. Setup listener for successful sign-in
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
+                // Successful login
                 navigate('/')
             }
         })
 
-        handleCallback()
+        // 3. Check if session already exists (race condition handling)
+        supabase.auth.getSession().then(({ data: { session }, error }) => {
+            if (error) {
+                console.error('Error checking session:', error)
+                toast.error('Failed to verify session.')
+                navigate('/')
+            } else if (session) {
+                navigate('/')
+            }
+        })
+
+        // 4. Failsafe: If nothing happens for 8 seconds, go home
+        const timeout = setTimeout(() => {
+            console.warn('Auth callback timed out')
+            navigate('/')
+        }, 8000)
 
         return () => {
             subscription.unsubscribe()
+            clearTimeout(timeout)
         }
     }, [navigate])
 
@@ -44,7 +54,7 @@ export function AuthCallbackPage() {
         <div className="h-screen w-screen flex items-center justify-center bg-background">
             <div className="text-center space-y-4">
                 <Spinner className="w-8 h-8 text-primary mx-auto" />
-                <p className="text-muted-foreground">Completing sign in...</p>
+                <p className="text-muted-foreground">Completing secure sign in...</p>
             </div>
         </div>
     )
