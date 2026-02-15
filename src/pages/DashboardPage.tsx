@@ -57,75 +57,95 @@ export function DashboardPage() {
   return (
     <DashboardProvider>
       <div className="flex h-screen bg-background overflow-hidden">
+        {/* Premium Ambient Background */}
+        <div className="fixed inset-0 z-[-1] bg-background">
+          <div className="absolute top-0 -left-1/4 w-1/2 h-1/2 bg-primary/5 rounded-full blur-[120px]" />
+          <div className="absolute bottom-0 -right-1/4 w-1/2 h-1/2 bg-cyan-500/5 rounded-full blur-[120px]" />
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay" />
+        </div>
+
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex w-64 flex-col border-r bg-sidebar">
+        <aside className="hidden lg:flex w-64 flex-col border-r border-border/40 bg-card/30 backdrop-blur-sm">
           <div className="p-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center">
                 <Compass className="text-primary-foreground w-5 h-5" />
               </div>
-              <span className="text-lg font-serif font-bold">Careerly</span>
+              <span className="text-xl font-bold tracking-tight">Careerly</span>
             </div>
           </div>
 
-          <nav className="flex-1 px-4 space-y-2">
+          <nav className="flex-1 px-4 space-y-1.5">
             {navItems.map((item) => {
               const Icon = item.icon
+              const isActive = activeView === item.id
               return (
                 <Button
                   key={item.id}
-                  variant={activeView === item.id ? 'secondary' : 'ghost'}
-                  className={`w-full justify-start gap-3 rounded-xl h-11 ${activeView === item.id ? 'bg-primary/10 text-primary font-medium hover:bg-primary/20' : 'text-muted-foreground'}`}
+                  variant="ghost"
+                  className={`w-full justify-start gap-3 rounded-lg h-10 transition-all duration-200 ${isActive
+                      ? 'bg-primary/10 text-primary font-medium shadow-sm'
+                      : 'text-muted-foreground hover:bg-primary/5 hover:text-foreground'
+                    }`}
                   onClick={() => setActiveView(item.id as View)}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground/70'}`} />
                   {item.label}
                 </Button>
               )
             })}
           </nav>
 
-          <div className="p-4 border-t space-y-4">
-            <div className="flex items-center gap-3 px-2 py-2">
-              <Avatar className="w-9 h-9 border-2 border-primary/10">
+          <div className="p-4 border-t border-border/40 space-y-4">
+            <div className="flex items-center gap-3 px-2 py-2 p-2 rounded-xl hover:bg-secondary/50 transition-colors cursor-pointer">
+              <Avatar className="w-8 h-8 border ring-2 ring-background">
                 <AvatarImage src={user?.imageUrl} />
-                <AvatarFallback className="bg-primary/5 text-primary">
+                <AvatarFallback className="bg-primary/10 text-primary font-bold">
                   {user?.displayName?.charAt(0) || <UserIcon className="w-4 h-4" />}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{user?.displayName || 'User'}</p>
-                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                <p className="text-sm font-medium truncate leading-none">{user?.displayName || 'User'}</p>
+                <p className="text-[11px] text-muted-foreground truncate mt-1">{user?.email}</p>
               </div>
             </div>
-            <Button variant="ghost" className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={logout}>
-              <LogOut className="w-5 h-5" />
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-lg h-9"
+              onClick={logout}
+            >
+              <LogOut className="w-4 h-4" />
               Logout
             </Button>
           </div>
         </aside>
 
-        {/* Mobile Sidebar Overlay */}
+        {/* Mobile Sidebar Overlay (Unchanged logic, just style tweaks if needed - kept mostly same for safety) */}
         {isMobileMenuOpen && (
           <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 lg:hidden" onClick={() => setIsMobileMenuOpen(false)}>
-            <div className="fixed inset-y-0 left-0 w-64 bg-sidebar border-r flex flex-col p-6 animate-fade-in" onClick={e => e.stopPropagation()}>
+            <div className="fixed inset-y-0 left-0 w-64 bg-background border-r flex flex-col p-6 animate-fade-in" onClick={e => e.stopPropagation()}>
+              {/* Mobile sidebar content matching refined style */}
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-2">
                   <Compass className="text-primary w-6 h-6" />
-                  <span className="text-lg font-serif font-bold">Careerly</span>
+                  <span className="text-lg font-bold tracking-tight">Careerly</span>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)}>
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5" />
                 </Button>
               </div>
               <nav className="flex-1 space-y-2">
                 {navItems.map((item) => {
                   const Icon = item.icon
+                  const isActive = activeView === item.id
                   return (
                     <Button
                       key={item.id}
-                      variant={activeView === item.id ? 'secondary' : 'ghost'}
-                      className={`w-full justify-start gap-3 rounded-xl h-11 ${activeView === item.id ? 'bg-primary/10 text-primary' : 'text-muted-foreground'}`}
+                      variant="ghost"
+                      className={`w-full justify-start gap-3 rounded-lg h-10 ${isActive
+                          ? 'bg-primary/10 text-primary font-medium'
+                          : 'text-muted-foreground'
+                        }`}
                       onClick={() => {
                         setActiveView(item.id as View)
                         setIsMobileMenuOpen(false)
@@ -145,27 +165,27 @@ export function DashboardPage() {
           </div>
         )}
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col h-screen overflow-hidden">
-          <header className="h-16 border-b flex items-center justify-between px-6 bg-background/50 backdrop-blur-md sticky top-0 z-40">
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
+          <header className="h-14 border-b border-border/40 flex items-center justify-between px-8 bg-background/60 backdrop-blur-xl sticky top-0 z-40 transition-all">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setIsMobileMenuOpen(true)}>
-                <Menu className="w-6 h-6" />
+              <Button variant="ghost" size="icon" className="lg:hidden -ml-2" onClick={() => setIsMobileMenuOpen(true)}>
+                <Menu className="w-5 h-5" />
               </Button>
-              <h2 className="text-lg font-serif font-bold capitalize">
+              <h2 className="text-xl font-semibold tracking-tight text-foreground/90 capitalize">
                 {navItems.find(i => i.id === activeView)?.label}
               </h2>
             </div>
             <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 text-xs font-medium px-3 py-1.5 bg-secondary rounded-full text-secondary-foreground">
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                AI System Ready
+              <div className="hidden sm:flex items-center gap-2 text-[10px] font-medium px-2.5 py-1 bg-primary/10 rounded-full text-primary border border-primary/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary shadow shadow-primary/50 animate-pulse" />
+                Live System
               </div>
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-6 bg-background/50">
-            <div className="max-w-6xl mx-auto animate-fade-in">
+          <main className="flex-1 overflow-y-auto p-8 scroll-smooth">
+            <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-2 duration-500">
               {renderContent()}
             </div>
           </main>

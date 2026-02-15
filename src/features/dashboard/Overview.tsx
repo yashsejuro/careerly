@@ -3,12 +3,13 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth'
-import { Map, Target, Rocket, ChevronRight, Sparkles, Trophy, TrendingUp, AlertCircle } from 'lucide-react'
+import { Map, Target, Rocket, ChevronRight, Sparkles, Trophy, TrendingUp, AlertCircle, ArrowUpRight } from 'lucide-react'
 import { useDashboard } from './DashboardContext'
 import { careerlyApi } from '@/lib/api'
 import { ProfileOverviewResponse } from '@/types/roadmap'
 
 import { motion } from 'framer-motion'
+import { Badge } from '@/components/ui/badge'
 
 export function Overview({ setActiveView }: { setActiveView: (view: any) => void }) {
   const { user } = useAuth()
@@ -16,7 +17,6 @@ export function Overview({ setActiveView }: { setActiveView: (view: any) => void
   const [overview, setOverview] = useState<ProfileOverviewResponse | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // ... (keep useEffect exactly as is)
   useEffect(() => {
     async function fetchOverview() {
       if (!user || !profile) return
@@ -80,146 +80,172 @@ Return JSON:
   }
 
   const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  }
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 20 } }
+  } as any
 
   return (
     <motion.div
-      className="space-y-8"
+      className="space-y-10"
       variants={container}
       initial="hidden"
       animate="show"
     >
       {/* Welcome Section */}
-      <motion.div variants={item} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-serif font-bold">Welcome back, {user?.displayName?.split(' ')[0] || 'Navigator'}!</h1>
-          <p className="text-muted-foreground mt-1">Here's an overview of your career progress.</p>
-        </div>
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          className="flex items-center gap-2 px-4 py-2 bg-primary/5 border border-primary/10 rounded-2xl cursor-default"
-        >
-          <Trophy className="w-5 h-5 text-primary" />
-          <span className="text-sm font-medium">Profile {profile ? '100%' : '20%'} Complete</span>
-        </motion.div>
+      <motion.div variants={item}>
+        <WelcomeSection user={user} profile={profile} />
       </motion.div>
 
       {/* Stats Grid */}
       <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
-          icon={<Map className="w-5 h-5 text-primary" />}
-          title="Roadmap Progress"
-          value="Step 2 of 8"
-          description="Build your first project"
+          icon={<Map className="w-5 h-5 text-blue-500" />}
+          title="Roadmap Status"
+          value="Phase 2"
+          subValue="of 8 Completed"
+          description="Next: Build Project"
           onClick={() => setActiveView('roadmap')}
-          index={0}
+          color="bg-blue-500/10"
         />
         <StatCard
-          icon={<Target className="w-5 h-5 text-primary" />}
-          title="Skills to Learn"
-          value="4 Skills"
-          description="Focusing on Backend"
+          icon={<Target className="w-5 h-5 text-purple-500" />}
+          title="Skill Targets"
+          value="4 Pending"
+          subValue="High Priority"
+          description="Focus: Backend Dev"
           onClick={() => setActiveView('skills')}
-          index={1}
+          color="bg-purple-500/10"
         />
         <StatCard
-          icon={<Rocket className="w-5 h-5 text-primary" />}
-          title="Internships"
+          icon={<Rocket className="w-5 h-5 text-emerald-500" />}
+          title="Applications"
           value={internshipCount.toString()}
-          description="Total applications"
+          subValue="Active"
+          description="View Pipeline"
           onClick={() => setActiveView('tracker')}
-          index={2}
+          color="bg-emerald-500/10"
         />
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Profile Summary */}
-        <motion.div variants={item} className="h-full">
-          <Card className="rounded-3xl border-none shadow-sm bg-secondary/20 h-full">
-            <CardHeader>
-              <CardTitle>Professional Profile</CardTitle>
-              <CardDescription>Your current academic and career status.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <ProfileItem label="Degree" value={profile?.degree || 'Not set'} />
-                <ProfileItem label="Current Year" value={profile?.year || 'Not set'} />
-                <ProfileItem label="Target Role" value={profile?.goal_career || 'Not set'} />
-                <ProfileItem label="Experience" value="Beginner" />
+        <motion.div variants={item} className="lg:col-span-7 h-full">
+          <Card className="rounded-2xl border-border/40 shadow-sm bg-card/50 backdrop-blur-sm h-full hover:shadow-md transition-shadow duration-300">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle className="text-xl font-semibold tracking-tight">Professional Profile</CardTitle>
+                  <CardDescription className="text-sm mt-1">Snapshot of your current standing.</CardDescription>
+                </div>
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                  <ArrowUpRight className="w-5 h-5" />
+                </Button>
               </div>
-              <div className="pt-4 border-t">
-                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Current Skills</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
+            </CardHeader>
+            <CardContent className="space-y-6 pt-6">
+              <div className="grid grid-cols-2 gap-y-6 gap-x-4">
+                <ProfileItem label="Degree Program" value={profile?.degree} />
+                <ProfileItem label="Academic Year" value={profile?.year} />
+                <ProfileItem label="Target Career" value={profile?.goal_career} highlight />
+                <ProfileItem label="Current Level" value="Intermediate Student" />
+              </div>
+
+              <div className="pt-6 border-t border-border/40">
+                <div className="flex items-center justify-between mb-4">
+                  <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/80">Skill Stack</Label>
+                  <span className="text-[10px] text-muted-foreground hover:text-primary cursor-pointer">Edit Skills</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
                   {profile?.skills.split(',').map((skill: string, i: number) => (
-                    <motion.span
+                    <Badge
                       key={i}
-                      whileHover={{ scale: 1.1 }}
-                      className="px-3 py-1 bg-background border rounded-full text-xs font-medium cursor-default"
+                      variant="secondary"
+                      className="px-3 py-1 bg-secondary/50 hover:bg-secondary text-secondary-foreground border border-border/30 rounded-md text-[11px] font-medium transition-colors cursor-none"
                     >
                       {skill.trim()}
-                    </motion.span>
-                  )) || <span className="text-sm text-muted-foreground italic">No skills listed yet</span>}
+                    </Badge>
+                  )) || <span className="text-sm text-muted-foreground italic">No skills listed</span>}
                 </div>
               </div>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* AI Suggestions Box (Dynamic) */}
-        <motion.div variants={item} className="h-full">
-          <Card className="rounded-3xl border-2 border-primary/20 shadow-lg shadow-primary/5 bg-gradient-to-br from-primary/5 to-transparent flex flex-col h-full">
-            <CardHeader>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 bg-primary rounded-lg">
-                  <Sparkles className="w-4 h-4 text-primary-foreground" />
+        {/* AI Suggestions Box */}
+        <motion.div variants={item} className="lg:col-span-5 h-full relative group">
+          {/* Infinite Color Loop Border (Google Gradient) */}
+          <div
+            className="absolute -inset-[1px] rounded-2xl animate-gradient-flow blur-[6px] opacity-40 transition-all duration-500"
+            style={{
+              backgroundImage: "linear-gradient(270deg, #EA4335, #FBBC05, #34A853, #4285F4, #EA4335)"
+            }}
+          />
+
+          {/* Floating Micro Icons */}
+          <FloatingMicroIcons />
+
+          <Card className="relative rounded-2xl border-0 shadow-xl bg-card/90 backdrop-blur-xl h-full flex flex-col overflow-hidden z-10">
+            {/* Decorative top sheen */}
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
+
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-primary to-purple-600 rounded-lg shadow-lg shadow-primary/25">
+                  <Sparkles className="w-4 h-4 text-white" />
                 </div>
-                <CardTitle className="text-xl">AI Career Advice</CardTitle>
+                <div>
+                  <CardTitle className="text-lg font-semibold tracking-tight">AI Insights</CardTitle>
+                  <CardDescription className="text-xs">Live career optimization</CardDescription>
+                </div>
               </div>
-              <CardDescription>Generated based on your interests and target role.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 flex-1 flex flex-col">
+
+            <CardContent className="flex-1 flex flex-col space-y-6">
               {loading ? (
-                <div className="space-y-3 animate-pulse">
-                  <div className="h-4 bg-primary/10 rounded w-3/4"></div>
-                  <div className="h-4 bg-primary/10 rounded w-full"></div>
-                  <div className="h-4 bg-primary/10 rounded w-1/2"></div>
+                <div className="space-y-4 animate-pulse py-4">
+                  <div className="h-4 bg-muted/50 rounded w-3/4"></div>
+                  <div className="h-4 bg-muted/50 rounded w-full"></div>
+                  <div className="h-16 bg-muted/30 rounded-xl w-full"></div>
                 </div>
               ) : overview ? (
                 <>
-                  <div className="p-4 bg-background/50 rounded-2xl border border-primary/10">
-                    <p className="text-sm leading-relaxed italic text-foreground/90">
+                  <div className="p-4 bg-primary/5 rounded-xl border border-primary/10">
+                    <p className="text-sm leading-relaxed text-foreground/90 font-medium">
                       "{overview.summary}"
                     </p>
                   </div>
 
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-2">
-                      <TrendingUp className="w-4 h-4 text-green-600 mt-1" />
+                  <div className="space-y-4">
+                    <div className="flex gap-4 items-start">
+                      <div className="mt-1 p-1 bg-green-500/10 rounded-full">
+                        <TrendingUp className="w-3 h-3 text-green-600" />
+                      </div>
                       <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Top Strength</h4>
-                        <p className="text-sm font-medium">{overview.strengths[0]}</p>
+                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Top Strength</h4>
+                        <p className="text-sm font-semibold">{overview.strengths[0]}</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-2">
-                      <AlertCircle className="w-4 h-4 text-orange-500 mt-1" />
+                    <div className="w-full h-px bg-border/40" />
+                    <div className="flex gap-4 items-start">
+                      <div className="mt-1 p-1 bg-orange-500/10 rounded-full">
+                        <AlertCircle className="w-3 h-3 text-orange-600" />
+                      </div>
                       <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Focus Area</h4>
-                        <p className="text-sm font-medium">{overview.recommended_focus}</p>
+                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Focus Area</h4>
+                        <p className="text-sm font-semibold">{overview.recommended_focus}</p>
                       </div>
                     </div>
                   </div>
                 </>
               ) : (
-                <div className="p-4 text-sm text-muted-foreground">
-                  Complete your profile to get AI advice.
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
+                  <p className="text-sm">Complete your profile to unlock AI insights.</p>
                 </div>
               )}
 
-              <div className="pt-4 mt-auto">
-                <Button variant="link" className="p-0 h-auto gap-1 text-primary group" onClick={() => setActiveView('roadmap')}>
-                  View Full Roadmap <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <div className="mt-auto pt-4">
+                <Button className="w-full bg-primary/10 hover:bg-primary/20 text-primary border-0 shadow-none justify-between group/btn" variant="outline" onClick={() => setActiveView('roadmap')}>
+                  Explore Roadmap <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                 </Button>
               </div>
             </CardContent>
@@ -230,38 +256,111 @@ Return JSON:
   )
 }
 
-function StatCard({ icon, title, value, description, onClick, index }: any) {
+function StatCard({ icon, title, value, subValue, description, onClick, color }: any) {
+  return (
+    <Card
+      className="rounded-2xl border-border/40 hover:border-border/80 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-10px_rgba(0,0,0,0.05)] transition-all duration-300 cursor-pointer group bg-card/60 backdrop-blur-sm"
+      onClick={onClick}
+    >
+      <CardContent className="p-6">
+        <div className="flex justify-between items-start mb-4">
+          <div className={`p-2.5 rounded-xl ${color} transition-colors`}>
+            {icon}
+          </div>
+          <Badge variant="outline" className="opacity-0 group-hover:opacity-100 transition-opacity bg-background/50">View</Badge>
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold tracking-tight text-foreground">{value}</span>
+            <span className="text-sm text-muted-foreground font-medium">{subValue}</span>
+          </div>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-border/40 flex items-center text-xs text-muted-foreground font-medium">
+          <span className="flex items-center gap-1 group-hover:text-primary transition-colors">
+            {description} <ArrowUpRight className="w-3 h-3" />
+          </span>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function ProfileItem({ label, value, highlight }: { label: string, value?: string, highlight?: boolean }) {
+  return (
+    <div className="space-y-1">
+      <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">{label}</p>
+      <p className={`text-base font-semibold truncate ${highlight ? 'text-primary' : 'text-foreground/90'}`}>
+        {value || 'Not set'}
+      </p>
+    </div>
+  )
+}
+
+
+function WelcomeSection({ user, profile }: any) {
   return (
     <motion.div
-      whileHover={{ y: -5, transition: { duration: 0.2 } }}
-      whileTap={{ scale: 0.98 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col md:flex-row justify-between items-end gap-6 pt-2"
     >
-      <Card className="rounded-3xl hover:shadow-lg hover:shadow-primary/5 transition-all cursor-pointer group h-full border-border/50" onClick={onClick}>
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-2.5 bg-secondary rounded-xl group-hover:bg-primary/10 transition-colors duration-300">
-              {icon}
-            </div>
-            <span className="text-sm font-medium text-muted-foreground">{title}</span>
-          </div>
-          <div className="space-y-1">
-            <div className="text-2xl font-bold">{value}</div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1 italic">
-              {description}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-1">
+        <h1 className="text-4xl font-bold tracking-tight text-foreground">
+          Welcome back, {user?.displayName?.split(' ')[0] || 'Navigator'}
+        </h1>
+        <p className="text-lg text-muted-foreground font-light">
+          Here's what's happening with your career trajectory today.
+        </p>
+      </div>
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        className="flex items-center gap-3 px-5 py-2.5 bg-background shadow-sm border border-border/60 rounded-full cursor-default backdrop-blur-sm"
+      >
+        <div className="relative">
+          <Trophy className="w-5 h-5 text-yellow-500" />
+          <div className="absolute inset-0 bg-yellow-400 blur-lg opacity-20" />
+        </div>
+        <span className="text-sm font-medium tracking-wide">
+          Profile Strength <span className="font-bold text-foreground">{profile ? '100%' : '20%'}</span>
+        </span>
+      </motion.div>
     </motion.div>
   )
 }
 
-function ProfileItem({ label, value }: { label: string, value: string }) {
+function FloatingMicroIcons() {
+  const icons = [
+    { icon: Sparkles, color: 'text-yellow-400', delay: 0, top: '-10%', left: '10%' },
+    { icon: Rocket, color: 'text-primary', delay: 2, top: '40%', right: '-5%' },
+    { icon: Target, color: 'text-purple-400', delay: 4, bottom: '-5%', left: '20%' },
+  ]
+
   return (
-    <div>
-      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className="text-sm font-medium truncate mt-0.5">{value}</p>
-    </div>
+    <>
+      {icons.map((item, i) => (
+        <motion.div
+          key={i}
+          className={`absolute z-20 ${item.color}`}
+          style={{ top: item.top, left: item.left, right: item.right, bottom: item.bottom }}
+          animate={{
+            y: [0, -10, 0],
+            opacity: [0.5, 1, 0.5],
+            scale: [0.8, 1, 0.8],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            delay: item.delay,
+            ease: "easeInOut"
+          }}
+        >
+          <item.icon className="w-4 h-4 shadow-sm" />
+        </motion.div>
+      ))}
+    </>
   )
 }
 
