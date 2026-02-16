@@ -148,7 +148,7 @@ Return JSON in this format:
               try {
                 await linkGithub()
               } catch (e) {
-                toast.error("Connection failed")
+                toast.error("Connection failed: " + (e as Error).message)
               }
             }} className="w-full">
               Connect Now
@@ -207,7 +207,7 @@ Return JSON in this format:
               try {
                 await linkGithub()
               } catch (e) {
-                toast.error("Connection failed")
+                toast.error("Connection failed: " + (e as Error).message)
               }
             }} className="w-full">
               Connect Now

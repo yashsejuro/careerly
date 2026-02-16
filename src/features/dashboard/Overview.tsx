@@ -147,7 +147,7 @@ Return JSON:
     >
       {/* Welcome Section */}
       <motion.div variants={item}>
-        <WelcomeSection user={user} profile={profile} />
+        <WelcomeSection user={user} profile={profile} internshipCount={internshipCount} />
       </motion.div>
 
       {/* Stats Grid */}
@@ -354,7 +354,29 @@ function ProfileItem({ label, value, highlight }: { label: string, value?: strin
 }
 
 
-function WelcomeSection({ user, profile }: any) {
+function WelcomeSection({ user, profile, internshipCount = 0 }: any) {
+  const calculateStrength = () => {
+    let score = 10 // Base score for signing up
+
+    // Profile Basics (30%)
+    if (profile?.degree && profile?.goal_career) score += 30
+
+    // Linked Accounts (40%)
+    const identities = user?.identities || []
+    if (identities.find((i: any) => i.provider === 'github')) score += 20
+    if (identities.find((i: any) => i.provider === 'linkedin_oidc')) score += 20
+
+    // Skills (10%)
+    if (profile?.skills?.length > 0) score += 10
+
+    // Activity (10%)
+    if (internshipCount > 0) score += 10
+
+    return Math.min(score, 100)
+  }
+
+  const strength = calculateStrength()
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -374,11 +396,11 @@ function WelcomeSection({ user, profile }: any) {
         className="flex items-center gap-3 px-5 py-2.5 bg-background shadow-sm border border-border/60 rounded-full cursor-default backdrop-blur-sm"
       >
         <div className="relative">
-          <Trophy className="w-5 h-5 text-yellow-500" />
-          <div className="absolute inset-0 bg-yellow-400 blur-lg opacity-20" />
+          <Trophy className={`w-5 h-5 ${strength === 100 ? 'text-yellow-500' : 'text-muted-foreground'}`} />
+          {strength === 100 && <div className="absolute inset-0 bg-yellow-400 blur-lg opacity-20" />}
         </div>
         <span className="text-sm font-medium tracking-wide">
-          Profile Strength <span className="font-bold text-foreground">{profile ? '100%' : '20%'}</span>
+          Profile Strength <span className={`font-bold ${strength === 100 ? 'text-green-600' : 'text-foreground'}`}>{strength}%</span>
         </span>
       </motion.div>
     </motion.div>

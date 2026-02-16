@@ -9,10 +9,10 @@ import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
 import { SkillGapAnalysisResponse, MissingSkill } from '@/types/roadmap'
 import { getProviderToken, fetchGithubRepos } from '@/lib/integrations'
-import { Github } from 'lucide-react'
+import { Github, Linkedin } from 'lucide-react'
 
 export function SkillsView() {
-  const { user, linkGithub } = useAuth()
+  const { user, linkGithub, linkLinkedin } = useAuth()
   const [analysis, setAnalysis] = useState<SkillGapAnalysisResponse | null>(null)
   const [currentSkills, setCurrentSkills] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
@@ -154,7 +154,7 @@ Return JSON in this exact format:
               try {
                 await linkGithub()
               } catch (e) {
-                toast.error("Connection failed")
+                toast.error("Connection failed: " + (e as Error).message)
               }
             }} className="w-full">
               Connect Now
@@ -217,7 +217,7 @@ Return JSON in this exact format:
               try {
                 await linkGithub()
               } catch (e) {
-                toast.error("Connection failed")
+                toast.error("Connection failed: " + (e as Error).message)
               }
             }} className="w-full">
               Connect Now
@@ -247,9 +247,38 @@ Return JSON in this exact format:
           </p>
         </div>
         <div className="flex gap-4">
-          <Button onClick={syncGithubSkills} size="lg" variant="outline" className="rounded-full px-8 gap-2">
-            <Github className="w-4 h-4" /> Sync GitHub Skills
-          </Button>
+          {user?.identities?.find(i => i.provider === 'github') ? (
+            <Button onClick={syncGithubSkills} size="lg" variant="outline" className="rounded-full px-8 gap-2">
+              <Github className="w-4 h-4" /> Sync GitHub Skills
+            </Button>
+          ) : (
+            <Button onClick={async () => {
+              try { await linkGithub() } catch (e) { toast.error((e as Error).message) }
+            }} size="lg" variant="outline" className="rounded-full px-8 gap-2">
+              <Github className="w-4 h-4" /> Connect GitHub
+            </Button>
+          )}
+
+          {user?.identities?.find(i => i.provider === 'linkedin_oidc') ? (
+            <Button disabled variant="outline" size="lg" className="rounded-full px-8 gap-2 border-green-500/50 text-green-600 bg-green-500/5">
+              <Linkedin className="w-4 h-4" /> LinkedIn Linked
+            </Button>
+          ) : (
+            <Button onClick={async () => {
+              try {
+                await linkLinkedin()
+              } catch (e) {
+                const msg = (e as Error).message
+                if (msg.includes('already linked') || msg.includes('registered')) {
+                  toast.error("LinkedIn account already linked to another user.")
+                } else {
+                  toast.error("Connection failed: " + msg)
+                }
+              }
+            }} size="lg" variant="outline" className="rounded-full px-8 gap-2">
+              <Linkedin className="w-4 h-4 text-[#0077b5]" /> Connect LinkedIn
+            </Button>
+          )}
           <Button onClick={analyzeSkills} size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20">
             Run Analysis
           </Button>
@@ -266,10 +295,38 @@ Return JSON in this exact format:
           <p className="text-muted-foreground mt-1">{analysis?.overall_gap_summary || 'AI-powered insights into your professional development.'}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={syncGithubSkills} disabled={analyzing} className="gap-2 rounded-xl">
-            {analyzing ? <Spinner className="w-4 h-4" /> : <Github className="w-4 h-4" />}
-            Sync Skills
-          </Button>
+          {user?.identities?.find(i => i.provider === 'github') ? (
+            <Button variant="outline" size="sm" onClick={syncGithubSkills} disabled={analyzing} className="gap-2 rounded-xl">
+              {analyzing ? <Spinner className="w-4 h-4" /> : <Github className="w-4 h-4" />}
+              Sync
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" onClick={async () => { try { await linkGithub() } catch (e) { toast.error((e as Error).message) } }} className="gap-2 rounded-xl">
+              <Github className="w-4 h-4" /> Connect
+            </Button>
+          )}
+
+          {user?.identities?.find(i => i.provider === 'linkedin_oidc') ? (
+            <span className="text-xs text-muted-foreground flex items-center gap-1 px-3 border rounded-xl bg-secondary/50">
+              <Linkedin className="w-3 h-3" /> Linked
+            </span>
+          ) : (
+            <Button variant="outline" size="sm" onClick={async () => {
+              try {
+                await linkLinkedin()
+              } catch (e) {
+                const msg = (e as Error).message
+                if (msg.includes('already linked') || msg.includes('registered')) {
+                  toast.error("LinkedIn account already linked to another user.")
+                } else {
+                  toast.error("Connection failed: " + msg)
+                }
+              }
+            }} className="gap-2 rounded-xl hidden md:flex">
+              <Linkedin className="w-4 h-4 text-[#0077b5]" />
+              Connect
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={analyzeSkills} disabled={analyzing} className="gap-2 rounded-xl">
             {analyzing ? <Spinner className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
             Refresh Analysis

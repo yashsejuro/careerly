@@ -6,6 +6,7 @@ type AuthUser = {
   displayName: string
   email?: string
   imageUrl?: string
+  identities?: { provider: string }[]
 }
 
 type AuthContextValue = {
@@ -16,6 +17,7 @@ type AuthContextValue = {
   loginWithGoogle: () => Promise<void>
   loginWithGithub: () => Promise<void>
   linkGithub: () => Promise<void>
+  linkLinkedin: () => Promise<void>
   loginWithLinkedin: () => Promise<void>
   logout: () => Promise<void>
 }
@@ -36,6 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           displayName: data.user.user_metadata.full_name || data.user.email || 'Student',
           email: data.user.email ?? undefined,
           imageUrl: data.user.user_metadata.avatar_url,
+          identities: data.user.identities?.map((i: any) => ({ provider: i.provider })),
         })
       }
       setIsLoading(false)
@@ -54,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           displayName: u.user_metadata.full_name || u.email || 'Student',
           email: u.email ?? undefined,
           imageUrl: u.user_metadata.avatar_url,
+          identities: u.identities?.map((i: any) => ({ provider: i.provider })),
         })
       }
     })
@@ -110,6 +114,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error
   }
 
+  const linkLinkedin = async () => {
+    const { error } = await supabase.auth.linkIdentity({
+      provider: 'linkedin_oidc',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        scopes: 'openid profile email',
+      },
+    })
+    if (error) throw error
+  }
+
   const loginWithLinkedin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'linkedin_oidc',
@@ -135,6 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loginWithGoogle,
         loginWithGithub,
         linkGithub,
+        linkLinkedin,
         loginWithLinkedin,
         logout,
       }}
