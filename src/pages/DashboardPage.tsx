@@ -1,7 +1,6 @@
 
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { useAuth } from '@/lib/auth'
-import { JDAnalyzer } from '@/features/tools/JDAnalyzer'
 import {
   Compass,
   LayoutDashboard,
@@ -17,14 +16,18 @@ import {
   ScanSearch
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Overview } from '@/features/dashboard/Overview'
-import { RoadmapView } from '@/features/roadmap/RoadmapView'
-import { SkillsView } from '@/features/roadmap/SkillsView'
-import { ProjectsView } from '@/features/roadmap/ProjectsView'
-import { TrackerView } from '@/features/tracker/TrackerView'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { DashboardProvider } from '@/features/dashboard/DashboardContext'
 import { motion } from 'framer-motion'
+import { Spinner } from '@/components/ui/spinner'
+
+// Lazy load feature views
+const Overview = lazy(() => import('@/features/dashboard/Overview').then(module => ({ default: module.Overview })))
+const RoadmapView = lazy(() => import('@/features/roadmap/RoadmapView').then(module => ({ default: module.RoadmapView })))
+const SkillsView = lazy(() => import('@/features/roadmap/SkillsView').then(module => ({ default: module.SkillsView })))
+const ProjectsView = lazy(() => import('@/features/roadmap/ProjectsView').then(module => ({ default: module.ProjectsView })))
+const TrackerView = lazy(() => import('@/features/tracker/TrackerView').then(module => ({ default: module.TrackerView })))
+const JDAnalyzer = lazy(() => import('@/features/tools/JDAnalyzer').then(module => ({ default: module.JDAnalyzer })))
 
 type View = 'overview' | 'roadmap' | 'skills' | 'projects' | 'tracker' | 'jd-scanner'
 
@@ -84,8 +87,8 @@ export function DashboardPage() {
                   key={item.id}
                   variant="ghost"
                   className={`w-full justify-start gap-3 rounded-lg h-10 transition-all duration-200 ${isActive
-                      ? 'bg-primary/10 text-primary font-medium shadow-sm'
-                      : 'text-muted-foreground hover:bg-primary/5 hover:text-foreground'
+                    ? 'bg-primary/10 text-primary font-medium shadow-sm'
+                    : 'text-muted-foreground hover:bg-primary/5 hover:text-foreground'
                     }`}
                   onClick={() => setActiveView(item.id as View)}
                 >
@@ -106,7 +109,7 @@ export function DashboardPage() {
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate leading-none">{user?.displayName || 'User'}</p>
-                <p className="text-[11px] text-muted-foreground truncate mt-1">{user?.email}</p>
+                <p className="text-sm text-muted-foreground truncate mt-1">{user?.email}</p>
               </div>
             </div>
             <Button
@@ -143,8 +146,8 @@ export function DashboardPage() {
                       key={item.id}
                       variant="ghost"
                       className={`w-full justify-start gap-3 rounded-lg h-10 ${isActive
-                          ? 'bg-primary/10 text-primary font-medium'
-                          : 'text-muted-foreground'
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : 'text-muted-foreground'
                         }`}
                       onClick={() => {
                         setActiveView(item.id as View)
@@ -186,7 +189,13 @@ export function DashboardPage() {
 
           <main className="flex-1 overflow-y-auto p-8 scroll-smooth">
             <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-2 duration-500">
-              {renderContent()}
+              <Suspense fallback={
+                <div className="h-full w-full flex items-center justify-center p-20">
+                  <Spinner className="w-8 h-8 text-primary" />
+                </div>
+              }>
+                {renderContent()}
+              </Suspense>
             </div>
           </main>
         </div>
