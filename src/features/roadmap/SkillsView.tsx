@@ -8,6 +8,8 @@ import { Target, ArrowRight, BookOpen, ExternalLink, Sparkles, BrainCircuit, Roc
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
 import { SkillGapAnalysisResponse, MissingSkill } from '@/types/roadmap'
+import { getProviderToken, fetchGithubRepos } from '@/lib/integrations'
+import { Github } from 'lucide-react'
 
 export function SkillsView() {
   const { user } = useAuth()
@@ -130,6 +132,59 @@ Return JSON in this exact format:
     }
   }
 
+  const syncGithubSkills = async () => {
+    if (!user) return
+    setAnalyzing(true)
+    try {
+      const token = await getProviderToken('github')
+      if (!token) {
+        toast.error("Please sign in with GitHub again to sync skills.", {
+          icon: <Github className="w-5 h-5" />
+        })
+        return
+      }
+
+      const repos = await fetchGithubRepos(token)
+      // Extract languages
+      const languages = new Set<string>()
+      repos.forEach(r => {
+        if (r.language) languages.add(r.language)
+      })
+
+      if (languages.size === 0) {
+        toast("No languages found in GitHub repos.")
+        return
+      }
+
+      const newSkills = Array.from(languages)
+      // Update state
+      const updated = Array.from(new Set([...currentSkills, ...newSkills]))
+
+      const added = newSkills.filter(s => !currentSkills.includes(s))
+
+      if (added.length > 0) {
+        setCurrentSkills(updated)
+
+        // Update profile in DB
+        const profiles = await careerlyApi.db.profiles.list({ where: { userId: user.id }, limit: 1 })
+        if (profiles.length > 0) {
+          await careerlyApi.db.profiles.update(profiles[0].id, {
+            skills: updated.join(', ')
+          })
+          toast.success(`Added ${added.length} skills from GitHub!`)
+        }
+      } else {
+        toast.success("Skills are already up to date with GitHub!")
+      }
+
+    } catch (error) {
+      console.error('Error syncing skills:', error)
+      toast.error('Failed to sync GitHub skills.')
+    } finally {
+      setAnalyzing(false)
+    }
+  }
+
   if (loading && !analysis) return <div className="py-20 flex justify-center"><Spinner className="w-8 h-8 text-primary" /></div>
 
   if (!analysis && !analyzing) {
@@ -144,9 +199,14 @@ Return JSON in this exact format:
             Find out exactly what you're missing to land your dream job.
           </p>
         </div>
-        <Button onClick={analyzeSkills} size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20">
-          Run Analysis
-        </Button>
+        <div className="flex gap-4">
+          <Button onClick={syncGithubSkills} size="lg" variant="outline" className="rounded-full px-8 gap-2">
+            <Github className="w-4 h-4" /> Sync GitHub Skills
+          </Button>
+          <Button onClick={analyzeSkills} size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20">
+            Run Analysis
+          </Button>
+        </div>
       </div>
     )
   }
@@ -158,10 +218,16 @@ Return JSON in this exact format:
           <h1 className="text-3xl font-serif font-bold">Skill Gap Analysis</h1>
           <p className="text-muted-foreground mt-1">{analysis?.overall_gap_summary || 'AI-powered insights into your professional development.'}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={analyzeSkills} disabled={analyzing} className="gap-2 rounded-xl">
-          {analyzing ? <Spinner className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
-          Refresh Analysis
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={syncGithubSkills} disabled={analyzing} className="gap-2 rounded-xl">
+            {analyzing ? <Spinner className="w-4 h-4" /> : <Github className="w-4 h-4" />}
+            Sync Skills
+          </Button>
+          <Button variant="outline" size="sm" onClick={analyzeSkills} disabled={analyzing} className="gap-2 rounded-xl">
+            {analyzing ? <Spinner className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+            Refresh Analysis
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -14,6 +14,8 @@ type AuthContextValue = {
   isLoading: boolean
   loginWithEmail: (email: string) => Promise<void>
   loginWithGoogle: () => Promise<void>
+  loginWithGithub: () => Promise<void>
+  loginWithLinkedin: () => Promise<void>
   logout: () => Promise<void>
 }
 
@@ -74,11 +76,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     })
     if (error) {
       throw error
     }
+  }
+
+  const loginWithGithub = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        scopes: 'read:user repo', // Request access to user profile and repositories
+      },
+    })
+    if (error) throw error
+  }
+
+  const loginWithLinkedin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'linkedin_oidc',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        scopes: 'openid profile email',
+      },
+    })
+    if (error) throw error
   }
 
   const logout = async () => {
@@ -93,6 +121,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         loginWithEmail,
         loginWithGoogle,
+        loginWithGithub,
+        loginWithLinkedin,
         logout,
       }}
     >

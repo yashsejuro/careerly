@@ -17,13 +17,15 @@ import {
   TrendingUp,
   Award,
   BookOpen,
-  Zap
+  Zap,
+  Github,
+  Linkedin
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 
 export function LandingPage() {
-  const { loginWithEmail, loginWithGoogle } = useAuth()
+  const { loginWithEmail, loginWithGoogle, loginWithGithub, loginWithLinkedin } = useAuth()
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -55,6 +57,28 @@ export function LandingPage() {
     } catch (error) {
       console.error('Google login error:', error)
       toast.error('Failed to sign in with Google')
+      setIsLoading(false)
+    }
+  }
+
+  const handleGithubLogin = async () => {
+    setIsLoading(true)
+    try {
+      await loginWithGithub()
+    } catch (error) {
+      console.error('GitHub login error:', error)
+      toast.error('Failed to sign in with GitHub')
+      setIsLoading(false)
+    }
+  }
+
+  const handleLinkedinLogin = async () => {
+    setIsLoading(true)
+    try {
+      await loginWithLinkedin()
+    } catch (error) {
+      console.error('LinkedIn login error:', error)
+      toast.error('Failed to sign in with LinkedIn')
       setIsLoading(false)
     }
   }
@@ -250,6 +274,27 @@ export function LandingPage() {
               </svg>
               Continue with Google
             </Button>
+
+            <div className="flex gap-4">
+              <Button
+                onClick={handleGithubLogin}
+                disabled={isLoading}
+                variant="outline"
+                className="w-full rounded-xl h-11 flex items-center justify-center gap-2"
+              >
+                <Github className="w-5 h-5" />
+                GitHub
+              </Button>
+              <Button
+                onClick={handleLinkedinLogin}
+                disabled={isLoading}
+                variant="outline"
+                className="w-full rounded-xl h-11 flex items-center justify-center gap-2"
+              >
+                <Linkedin className="w-5 h-5 text-[#0077b5]" />
+                LinkedIn
+              </Button>
+            </div>
 
             {/* Divider */}
             <div className="relative">

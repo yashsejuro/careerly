@@ -36,6 +36,11 @@ export const careerlyApi = {
         if (error) throw error
         return (data || []).map((p: any) => ({ ...p, userId: p.user_id }))
       },
+      async update(id: string, updates: any) {
+        const { userId, ...rest } = updates
+        const { error } = await supabase.from('profiles').update(rest).eq('id', id)
+        if (error) throw error
+      },
     },
     internships: {
       async count({ where }: { where: WhereClause }) {

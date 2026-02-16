@@ -17,6 +17,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { getProviderToken, fetchGithubRepos } from '@/lib/integrations'
+import { Github } from 'lucide-react'
 
 export function ProjectsView() {
   const { user } = useAuth()
@@ -122,6 +124,58 @@ Return JSON in this format:
     }
   }
 
+  const syncGithubProjects = async () => {
+    if (!user) return
+    setGenerating(true)
+    try {
+      // Trying with 'github' (provider name)
+      const token = await getProviderToken('github')
+
+      if (!token) {
+        toast.error("Please sign in with GitHub again to enable sync.", {
+          duration: 5000,
+          icon: <Github className="w-5 h-5 text-black" />
+        })
+        return
+      }
+
+      const repos = await fetchGithubRepos(token)
+
+      if (repos.length === 0) {
+        toast("No public repositories found.", { icon: '📂' })
+        return
+      }
+
+      const newProjects = repos.map(repo => ({
+        title: repo.name,
+        problem_statement: repo.description || "Project imported from GitHub",
+        target_users: [],
+        tech_stack: repo.language ? [repo.language] : [],
+        core_features: [],
+        advanced_features: [],
+        resume_value: `GitHub Project • ${repo.stargazers_count} stars • Updated ${new Date(repo.updated_at).toLocaleDateString()}`
+      })) as ProjectRecommendation[]
+
+      // Filter out existing projects to avoid duplicates if possible, or just prepend
+      // Basic check by title
+      const uniqueNew = newProjects.filter(np => !projects.some(p => p.title === np.title))
+
+      if (uniqueNew.length === 0) {
+        toast.success("GitHub projects already synced!")
+      } else {
+        setProjects(prev => [...uniqueNew, ...prev])
+        toast.success(`Synced ${uniqueNew.length} projects from GitHub!`)
+        setActiveTab('discover')
+      }
+
+    } catch (error) {
+      console.error('Error syncing GitHub:', error)
+      toast.error('Failed to sync GitHub projects.')
+    } finally {
+      setGenerating(false)
+    }
+  }
+
   const addToBoard = async (project: ProjectRecommendation) => {
     if (!user) return
     try {
@@ -190,10 +244,16 @@ Return JSON in this format:
           </TabsList>
 
           {activeTab === 'discover' && (
-            <Button variant="outline" size="sm" onClick={generateProjects} disabled={generating} className="gap-2 rounded-xl">
-              {generating ? <Spinner className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
-              Generate New Ideas
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={syncGithubProjects} disabled={generating} className="gap-2 rounded-xl">
+                {generating ? <Spinner className="w-4 h-4" /> : <Github className="w-4 h-4" />}
+                Sync GitHub
+              </Button>
+              <Button variant="outline" size="sm" onClick={generateProjects} disabled={generating} className="gap-2 rounded-xl">
+                {generating ? <Spinner className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+                Generate New Ideas
+              </Button>
+            </div>
           )}
         </div>
 
