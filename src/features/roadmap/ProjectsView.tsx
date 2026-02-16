@@ -21,7 +21,7 @@ import { getProviderToken, fetchGithubRepos } from '@/lib/integrations'
 import { Github } from 'lucide-react'
 
 export function ProjectsView() {
-  const { user } = useAuth()
+  const { user, loginWithGithub } = useAuth()
   const [projects, setProjects] = useState<ProjectRecommendation[]>([])
   const [userProjects, setUserProjects] = useState<UserProject[]>([])
   const [loading, setLoading] = useState(true)
@@ -132,10 +132,29 @@ Return JSON in this format:
       const token = await getProviderToken('github')
 
       if (!token) {
-        toast.error("Please sign in with GitHub again to enable sync.", {
-          duration: 5000,
-          icon: <Github className="w-5 h-5 text-black" />
-        })
+        toast.custom((t) => (
+          <div className="bg-background border border-border p-4 rounded-xl shadow-lg flex flex-col gap-3 min-w-[300px]">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Github className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-bold text-sm">Connect GitHub Account</p>
+                <p className="text-xs text-muted-foreground">Required to sync your repositories.</p>
+              </div>
+            </div>
+            <Button size="sm" onClick={async () => {
+              toast.dismiss(t.id)
+              try {
+                await loginWithGithub()
+              } catch (e) {
+                toast.error("Connection failed")
+              }
+            }} className="w-full">
+              Connect Now
+            </Button>
+          </div>
+        ), { duration: 6000 })
         return
       }
 
@@ -169,8 +188,35 @@ Return JSON in this format:
       }
 
     } catch (error) {
-      console.error('Error syncing GitHub:', error)
-      toast.error('Failed to sync GitHub projects.')
+      const err = error as Error
+      console.error('Error syncing GitHub:', err)
+      if (err.message === 'Unauthorized' || err.message.includes('401')) {
+        toast.custom((t) => (
+          <div className="bg-background border border-border p-4 rounded-xl shadow-lg flex flex-col gap-3 min-w-[300px]">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Github className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-bold text-sm">Switch to GitHub Auth</p>
+                <p className="text-xs text-muted-foreground">We need your permission to access repositories.</p>
+              </div>
+            </div>
+            <Button size="sm" onClick={async () => {
+              toast.dismiss(t.id)
+              try {
+                await loginWithGithub()
+              } catch (e) {
+                toast.error("Connection failed")
+              }
+            }} className="w-full">
+              Connect Now
+            </Button>
+          </div>
+        ), { duration: 6000 })
+      } else {
+        toast.error(`Sync failed: ${err.message}`)
+      }
     } finally {
       setGenerating(false)
     }

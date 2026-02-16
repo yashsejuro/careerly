@@ -25,6 +25,10 @@ export async function fetchGithubRepos(token: string): Promise<GitHubRepo[]> {
         }
     })
 
+    if (response.status === 401) {
+        throw new Error("Unauthorized")
+    }
+
     if (!response.ok) {
         throw new Error(`GitHub API error: ${response.statusText}`)
     }
