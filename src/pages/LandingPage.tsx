@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
+import { SEO } from '@/components/common/SEO'
 
 export function LandingPage() {
   const { loginWithEmail, loginWithGoogle, loginWithGithub, loginWithLinkedin } = useAuth()
@@ -85,7 +86,13 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background selection:bg-primary/20">
+      <SEO
+        title="Home"
+        description="Careerly helps students navigate their career path with confidence through personalized roadmaps, skill gap analysis, and internship tracking."
+        url="https://careerly.ai"
+      />
       {/* Navigation */}
+
       <motion.nav
         className="border-b bg-background/50 backdrop-blur-md sticky top-0 z-50"
         initial={{ y: -100 }}
