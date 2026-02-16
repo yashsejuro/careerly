@@ -14,6 +14,7 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage').then(module => 
 const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage').then(module => ({ default: module.AuthCallbackPage })))
 const NotFoundPage = lazy(() => import('./pages/ErrorPages')) // Default export
 const ErrorBoundaryPage = lazy(() => import('./pages/ErrorPages').then(module => ({ default: module.ErrorBoundaryPage })))
+const CareerRoadmapBlog = lazy(() => import('./pages/CareerRoadmapBlog'))
 
 function MainApp() {
   const { isAuthenticated, isLoading, user } = useAuth()
@@ -82,6 +83,7 @@ export default function App() {
         </div>
       }>
         <Routes>
+          <Route path="/blog/career-roadmap-for-college-students" element={<CareerRoadmapBlog />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/" element={<MainApp />} />
           {/* Redirect any unknown routes (like the broken LinkedIn link) to Home */}

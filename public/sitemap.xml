@@ -7,4 +7,10 @@
     <priority>1.0</priority>
   </url>
   <!-- Add other public pages here, e.g., /about, /blog if created later -->
+  <url>
+    <loc>https://careerly-pi.vercel.app/blog/career-roadmap-for-college-students</loc>
+    <lastmod>2026-02-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
