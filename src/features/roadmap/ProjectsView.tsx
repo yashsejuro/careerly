@@ -21,7 +21,7 @@ import { getProviderToken, fetchGithubRepos } from '@/lib/integrations'
 import { Github } from 'lucide-react'
 
 export function ProjectsView() {
-  const { user, loginWithGithub } = useAuth()
+  const { user, linkGithub } = useAuth()
   const [projects, setProjects] = useState<ProjectRecommendation[]>([])
   const [userProjects, setUserProjects] = useState<UserProject[]>([])
   const [loading, setLoading] = useState(true)
@@ -146,7 +146,7 @@ Return JSON in this format:
             <Button size="sm" onClick={async () => {
               toast.dismiss(t.id)
               try {
-                await loginWithGithub()
+                await linkGithub()
               } catch (e) {
                 toast.error("Connection failed")
               }
@@ -205,7 +205,7 @@ Return JSON in this format:
             <Button size="sm" onClick={async () => {
               toast.dismiss(t.id)
               try {
-                await loginWithGithub()
+                await linkGithub()
               } catch (e) {
                 toast.error("Connection failed")
               }

@@ -15,6 +15,7 @@ type AuthContextValue = {
   loginWithEmail: (email: string) => Promise<void>
   loginWithGoogle: () => Promise<void>
   loginWithGithub: () => Promise<void>
+  linkGithub: () => Promise<void>
   loginWithLinkedin: () => Promise<void>
   logout: () => Promise<void>
 }
@@ -98,6 +99,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error
   }
 
+  const linkGithub = async () => {
+    const { error } = await supabase.auth.linkIdentity({
+      provider: 'github',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        scopes: 'read:user repo',
+      },
+    })
+    if (error) throw error
+  }
+
   const loginWithLinkedin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'linkedin_oidc',
@@ -122,6 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loginWithEmail,
         loginWithGoogle,
         loginWithGithub,
+        linkGithub,
         loginWithLinkedin,
         logout,
       }}

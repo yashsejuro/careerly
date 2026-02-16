@@ -12,7 +12,7 @@ import { getProviderToken, fetchGithubRepos } from '@/lib/integrations'
 import { Github } from 'lucide-react'
 
 export function SkillsView() {
-  const { user, loginWithGithub } = useAuth()
+  const { user, linkGithub } = useAuth()
   const [analysis, setAnalysis] = useState<SkillGapAnalysisResponse | null>(null)
   const [currentSkills, setCurrentSkills] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
@@ -152,7 +152,7 @@ Return JSON in this exact format:
             <Button size="sm" onClick={async () => {
               toast.dismiss(t.id)
               try {
-                await loginWithGithub()
+                await linkGithub()
               } catch (e) {
                 toast.error("Connection failed")
               }
@@ -215,7 +215,7 @@ Return JSON in this exact format:
             <Button size="sm" onClick={async () => {
               toast.dismiss(t.id)
               try {
-                await loginWithGithub()
+                await linkGithub()
               } catch (e) {
                 toast.error("Connection failed")
               }
