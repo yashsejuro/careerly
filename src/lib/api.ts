@@ -171,10 +171,8 @@ export const careerlyApi = {
     }): Promise<{ object: T }> {
       // 1. Try Real AI (Groq)
       try {
-        if (import.meta.env.VITE_GROQ_API_KEY) {
-          const result = await generateWithGroq<T>(prompt, schema)
-          return { object: result }
-        }
+        const result = await generateWithGroq<T>(prompt, schema)
+        return { object: result }
       } catch (e) {
         console.warn('Groq AI failed, falling back to mock:', e)
         // Fallthrough to mock data below
