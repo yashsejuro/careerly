@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/lib/auth'
 
@@ -18,7 +18,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
 
-  const fetchData = async (force = false) => {
+  const fetchData = useCallback(async (force = false) => {
     if (!user) return
     if (!force && isLoaded) return
 
@@ -39,16 +39,27 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     } finally {
         setIsLoading(false)
     }
-  }
+  }, [user, isLoaded])
 
   useEffect(() => {
     if (user && !isLoaded) {
         fetchData()
     }
-  }, [user, isLoaded])
+  }, [user, isLoaded, fetchData])
+
+  const refreshData = useCallback(async () => {
+    await fetchData(true)
+  }, [fetchData])
+
+  const value = useMemo(() => ({
+    profile,
+    internshipCount,
+    refreshData,
+    isLoading
+  }), [profile, internshipCount, refreshData, isLoading])
 
   return (
-    <DashboardContext.Provider value={{ profile, internshipCount, refreshData: () => fetchData(true), isLoading }}>
+    <DashboardContext.Provider value={value}>
       {children}
     </DashboardContext.Provider>
   )
