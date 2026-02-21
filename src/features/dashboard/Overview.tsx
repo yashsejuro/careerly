@@ -7,27 +7,28 @@ import { Map, Target, Rocket, ChevronRight, Sparkles, Trophy, TrendingUp, AlertC
 
 // ... (other components unchanged)
 
+const FLOATING_ICONS = [
+  // Top Left Cluster
+  { icon: Code, color: 'text-blue-500', bg: 'bg-blue-500/10', delay: 0, top: '-15%', left: '5%', size: 'w-8 h-8' },
+  { icon: Sparkles, color: 'text-yellow-400', bg: 'bg-yellow-400/10', delay: 1.5, top: '10%', left: '-8%', size: 'w-6 h-6' },
+
+  // Top Right Cluster
+  { icon: Lightbulb, color: 'text-amber-500', bg: 'bg-amber-500/10', delay: 0.5, top: '-20%', right: '10%', size: 'w-7 h-7' },
+
+  // Bottom Right Cluster
+  { icon: Rocket, color: 'text-emerald-500', bg: 'bg-emerald-500/10', delay: 2, bottom: '20%', right: '-8%', size: 'w-8 h-8' },
+  { icon: Zap, color: 'text-purple-500', bg: 'bg-purple-500/10', delay: 2.5, bottom: '-10%', right: '5%', size: 'w-6 h-6' },
+
+  // Bottom Left Cluster
+  { icon: Target, color: 'text-red-500', bg: 'bg-red-500/10', delay: 1, bottom: '10%', left: '-10%', size: 'w-7 h-7' },
+  { icon: GraduationCap, color: 'text-cyan-500', bg: 'bg-cyan-500/10', delay: 3, bottom: '-15%', left: '15%', size: 'w-6 h-6' },
+]
+
 function FloatingMicroIcons() {
-  const icons = [
-    // Top Left Cluster
-    { icon: Code, color: 'text-blue-500', bg: 'bg-blue-500/10', delay: 0, top: '-15%', left: '5%', size: 'w-8 h-8' },
-    { icon: Sparkles, color: 'text-yellow-400', bg: 'bg-yellow-400/10', delay: 1.5, top: '10%', left: '-8%', size: 'w-6 h-6' },
-
-    // Top Right Cluster
-    { icon: Lightbulb, color: 'text-amber-500', bg: 'bg-amber-500/10', delay: 0.5, top: '-20%', right: '10%', size: 'w-7 h-7' },
-
-    // Bottom Right Cluster
-    { icon: Rocket, color: 'text-emerald-500', bg: 'bg-emerald-500/10', delay: 2, bottom: '20%', right: '-8%', size: 'w-8 h-8' },
-    { icon: Zap, color: 'text-purple-500', bg: 'bg-purple-500/10', delay: 2.5, bottom: '-10%', right: '5%', size: 'w-6 h-6' },
-
-    // Bottom Left Cluster
-    { icon: Target, color: 'text-red-500', bg: 'bg-red-500/10', delay: 1, bottom: '10%', left: '-10%', size: 'w-7 h-7' },
-    { icon: GraduationCap, color: 'text-cyan-500', bg: 'bg-cyan-500/10', delay: 3, bottom: '-15%', left: '15%', size: 'w-6 h-6' },
-  ]
 
   return (
     <>
-      {icons.map((item, i) => (
+      {FLOATING_ICONS.map((item, i) => (
         <motion.div
           key={i}
           className={`absolute z-20 flex items-center justify-center rounded-2xl ${item.bg} backdrop-blur-sm shadow-sm border border-white/10`}
