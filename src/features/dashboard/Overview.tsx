@@ -62,6 +62,7 @@ function FloatingMicroIcons() {
 import { useDashboard } from './DashboardContext'
 import { careerlyApi } from '@/lib/api'
 import { ProfileOverviewResponse } from '@/types/roadmap'
+import { getCachedOverview, setCachedOverview } from './overviewCache'
 
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
@@ -76,10 +77,9 @@ export function Overview({ setActiveView }: { setActiveView: (view: any) => void
     async function fetchOverview() {
       if (!user || !profile) return
 
-      const cacheKey = `careerly_overview_${user.id}`
-      const cached = localStorage.getItem(cacheKey)
+      const cached = getCachedOverview(user.id)
       if (cached) {
-        setOverview(JSON.parse(cached))
+        setOverview(cached)
         return
       }
 
@@ -114,7 +114,7 @@ Return JSON:
           }
         })
         setOverview(object)
-        localStorage.setItem(cacheKey, JSON.stringify(object))
+        setCachedOverview(user.id, object)
       } catch (e) {
         console.error(e)
       } finally {
