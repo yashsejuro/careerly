@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 import { SkillGapAnalysisResponse, MissingSkill } from '@/types/roadmap'
 import { getProviderToken, fetchGithubRepos } from '@/lib/integrations'
 import { Github, Linkedin } from 'lucide-react'
+import { fetchSkillsAndAnalysis } from './skills-api'
 
 export function SkillsView() {
   const { user, linkGithub, linkLinkedin } = useAuth()
@@ -23,20 +24,12 @@ export function SkillsView() {
       if (!user) return
       setLoading(true)
       try {
-        // Fetch Profile for current skills
-        const profiles = await careerlyApi.db.profiles.list({
-          where: { userId: user.id },
-          limit: 1
-        })
+        // Fetch data concurrently
+        const { profiles, existing } = await fetchSkillsAndAnalysis(user.id)
+
         if (profiles.length > 0) {
           setCurrentSkills(profiles[0].skills.split(',').map((s: string) => s.trim()))
         }
-
-        // Check for cached analysis
-        const existing = await careerlyApi.db.skills.list({
-          where: { userId: user.id },
-          limit: 1,
-        })
 
         if (existing.length > 0 && existing[0].data) {
           const parsed = JSON.parse(existing[0].data)
