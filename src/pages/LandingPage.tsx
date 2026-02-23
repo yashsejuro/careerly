@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,14 +22,93 @@ import {
   Linkedin
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { motion } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { SEO } from '@/components/common/SEO'
+import Lenis from 'lenis'
+
+// ── Scroll-Triggered Section Reveal ──
+const sectionRevealVariants = {
+  hidden: { opacity: 0, y: 60, filter: 'blur(12px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as const },
+  },
+}
+
+function SectionReveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const isInView = useInView(ref, { once: true, margin: '-80px' })
+
+  return (
+    <motion.div
+      ref={ref}
+      variants={sectionRevealVariants}
+      initial="hidden"
+      animate={isInView ? 'visible' : 'hidden'}
+      transition={{ delay }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+// ── Cinematic Word-by-Word Text Reveal ──
+function RevealText({ text, highlightWord, className = '' }: { text: string; highlightWord?: string; className?: string }) {
+  const ref = useRef<HTMLHeadingElement>(null)
+  const isInView = useInView(ref, { once: true, margin: '-50px' })
+
+  const words = text.split(' ')
+
+  return (
+    <h1 ref={ref} className={className}>
+      {words.map((word, idx) => {
+        const isHighlight = highlightWord && word === highlightWord
+        return (
+          <span key={idx} className="inline-block overflow-hidden mr-[0.22em] align-top">
+            <motion.span
+              className={`inline-block ${isHighlight ? 'gradient-text-animated' : ''}`}
+              initial={{ y: '120%', rotateX: 80 }}
+              animate={isInView ? { y: 0, rotateX: 0 } : { y: '120%', rotateX: 80 }}
+              transition={{
+                delay: 0.15 + idx * 0.08,
+                duration: 0.7,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
+              {word}
+            </motion.span>
+          </span>
+        )
+      })}
+    </h1>
+  )
+}
 
 export function LandingPage() {
   const { loginWithEmail, loginWithGoogle, loginWithGithub, loginWithLinkedin } = useAuth()
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  // ── Lenis Smooth Scroll ──
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    })
+
+    function raf(time: number) {
+      lenis.raf(time)
+      requestAnimationFrame(raf)
+    }
+    requestAnimationFrame(raf)
+
+    return () => lenis.destroy()
+  }, [])
 
   const handleLogin = async () => {
     if (!email || !email.includes('@')) {
@@ -120,36 +199,25 @@ export function LandingPage() {
       <section className="relative py-20 lg:py-32 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
-            <motion.h1
+            <RevealText
+              text="Navigate Your Career Path with Confidence"
+              highlightWord="Confidence"
               className="text-5xl lg:text-7xl font-serif font-bold leading-tight mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              Navigate Your Career Path with{' '}
-              <motion.span
-                className="gradient-text-animated"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-              >
-                Confidence
-              </motion.span>
-            </motion.h1>
+            />
             <motion.p
               className="text-xl text-muted-foreground mb-10 leading-relaxed"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
+              initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              transition={{ delay: 0.8, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             >
               Discover personalized roadmaps, analyze skill gaps, and track internships.
               Empowering college students to reach their full professional potential.
             </motion.p>
             <motion.div
               className="flex flex-col sm:flex-row gap-4 justify-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
+              initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              transition={{ delay: 1.0, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             >
               <motion.div
                 whileHover={{ scale: 1.05 }}
@@ -216,41 +284,41 @@ export function LandingPage() {
 
       {/* Features Grid */}
       <section className="relative py-24 bg-secondary/30 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-4xl font-serif font-bold mb-4">Core MVP Features</h2>
-            <p className="text-muted-foreground text-lg">Everything you need to jumpstart your career journey.</p>
-          </motion.div>
+        <SectionReveal>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-serif font-bold mb-4">Core MVP Features</h2>
+              <p className="text-muted-foreground text-lg">Everything you need to jumpstart your career journey.</p>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <FeatureCard
-              icon={<Compass className="w-8 h-8 text-primary" />}
-              title="Career Roadmaps"
-              description="AI-generated step-by-step guides tailored to your specific career goals and degree."
-            />
-            <FeatureCard
-              icon={<Target className="w-8 h-8 text-primary" />}
-              title="Skill Gap Analysis"
-              description="Identify exactly what skills you're missing for your dream job and how to bridge them."
-            />
-            <FeatureCard
-              icon={<Rocket className="w-8 h-8 text-primary" />}
-              title="Project Ideas"
-              description="Receive personalized project recommendations to build a portfolio that stands out."
-            />
-            <FeatureCard
-              icon={<ClipboardCheck className="w-8 h-8 text-primary" />}
-              title="Internship Tracker"
-              description="Manage all your internship applications in one intuitive, organized dashboard."
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <FeatureCard
+                icon={<Compass className="w-8 h-8 text-primary" />}
+                title="Career Roadmaps"
+                description="AI-generated step-by-step guides tailored to your specific career goals and degree."
+                index={0}
+              />
+              <FeatureCard
+                icon={<Target className="w-8 h-8 text-primary" />}
+                title="Skill Gap Analysis"
+                description="Identify exactly what skills you're missing for your dream job and how to bridge them."
+                index={1}
+              />
+              <FeatureCard
+                icon={<Rocket className="w-8 h-8 text-primary" />}
+                title="Project Ideas"
+                description="Receive personalized project recommendations to build a portfolio that stands out."
+                index={2}
+              />
+              <FeatureCard
+                icon={<ClipboardCheck className="w-8 h-8 text-primary" />}
+                title="Internship Tracker"
+                description="Manage all your internship applications in one intuitive, organized dashboard."
+                index={3}
+              />
+            </div>
           </div>
-        </div>
+        </SectionReveal>
 
         {/* Floating Icons for Features Section */}
         <FloatingIcons />
@@ -337,28 +405,30 @@ export function LandingPage() {
 
       {/* Footer */}
       <footer className="py-12 border-t">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-            <Compass className="text-primary w-6 h-6" />
-            <span className="text-lg font-serif font-bold">Career Navigator</span>
+        <SectionReveal>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Compass className="text-primary w-6 h-6" />
+              <span className="text-lg font-serif font-bold">Career Navigator</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              © 2026 Careerly. Built for the next generation of professionals.
+            </p>
           </div>
-          <p className="text-sm text-muted-foreground">
-            © 2026 Careerly. Built for the next generation of professionals.
-          </p>
-        </div>
+        </SectionReveal>
       </footer>
     </div>
   )
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+function FeatureCard({ icon, title, description, index = 0 }: { icon: React.ReactNode, title: string, description: string, index?: number }) {
   return (
     <motion.div
       className="glass-card p-8 rounded-3xl border border-primary/10 shadow-sm group cursor-pointer"
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.5 }}
+      initial={{ opacity: 0, y: 50, filter: 'blur(8px)' }}
+      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.6, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{
         y: -8,
         boxShadow: "0 20px 40px rgba(0, 191, 165, 0.2)",
