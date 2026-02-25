@@ -34,6 +34,7 @@ import {
 } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
+import { handleAppError } from '@/lib/errors'
 import { format } from 'date-fns'
 
 type Status = 'Applied' | 'Interview' | 'Offer' | 'Rejected' | 'Interested'
@@ -77,7 +78,7 @@ export function TrackerView() {
       setInternships((data as Internship[]) ?? [])
     } catch (error) {
       console.error('Error fetching internships:', error)
-      toast.error('Failed to load internships')
+      handleAppError({ error, context: 'db.internships.load', errorCode: 'DB_LOAD' })
     } finally {
       setLoading(false)
     }
@@ -108,7 +109,7 @@ export function TrackerView() {
       fetchInternships()
     } catch (error) {
       console.error('Error adding internship:', error)
-      toast.error('Failed to add internship')
+      handleAppError({ error, context: 'db.internships.add', errorCode: 'DB_SAVE' })
     }
   }
 
@@ -124,7 +125,7 @@ export function TrackerView() {
       fetchInternships()
     } catch (error) {
       console.error('Error deleting internship:', error)
-      toast.error('Failed to delete')
+      handleAppError({ error, context: 'db.internships.delete', errorCode: 'DB_DELETE' })
     }
   }
 

@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth'
 import { profileSchema } from '@/lib/schemas'
 import { Compass, Sparkles, ChevronRight, ChevronLeft } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { handleAppError } from '@/lib/errors'
 
 interface OnboardingPageProps {
   onComplete: () => void
@@ -74,7 +75,7 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
       onComplete()
     } catch (error) {
       console.error('Error saving profile:', error)
-      toast.error('Failed to save profile. Please try again.')
+      handleAppError({ error, context: 'db.profile.save', errorCode: 'DB_PROFILE' })
     } finally {
       setLoading(false)
     }
@@ -90,12 +91,12 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
 
         <Card className="border-none shadow-xl rounded-3xl overflow-hidden">
           <div className="h-2 bg-secondary">
-            <div 
-              className="h-full bg-primary transition-all duration-500" 
-              style={{ width: `${(step / 3) * 100}%` }} 
+            <div
+              className="h-full bg-primary transition-all duration-500"
+              style={{ width: `${(step / 3) * 100}%` }}
             />
           </div>
-          
+
           <CardHeader className="pt-8 px-8">
             <CardTitle className="text-2xl">
               {step === 1 && "Academic Background"}
@@ -115,18 +116,18 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="degree">Degree / Major</Label>
-                    <Input 
-                      id="degree" 
-                      placeholder="e.g. B.Tech in Computer Science" 
+                    <Input
+                      id="degree"
+                      placeholder="e.g. B.Tech in Computer Science"
                       value={formData.degree}
                       onChange={(e) => setFormData({ ...formData, degree: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="year">Current Year</Label>
-                    <Input 
-                      id="year" 
-                      placeholder="e.g. 3rd Year" 
+                    <Input
+                      id="year"
+                      placeholder="e.g. 3rd Year"
                       value={formData.year}
                       onChange={(e) => setFormData({ ...formData, year: e.target.value })}
                     />
@@ -138,18 +139,18 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="skills">Current Skills (comma separated)</Label>
-                    <Input 
-                      id="skills" 
-                      placeholder="e.g. Python, React, SQL" 
+                    <Input
+                      id="skills"
+                      placeholder="e.g. Python, React, SQL"
                       value={formData.skills}
                       onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="interests">Interests</Label>
-                    <Input 
-                      id="interests" 
-                      placeholder="e.g. Web Dev, Machine Learning" 
+                    <Input
+                      id="interests"
+                      placeholder="e.g. Web Dev, Machine Learning"
                       value={formData.interests}
                       onChange={(e) => setFormData({ ...formData, interests: e.target.value })}
                     />
@@ -160,9 +161,9 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
               {step === 3 && (
                 <div className="space-y-2">
                   <Label htmlFor="goalCareer">Target Career Role</Label>
-                  <Input 
-                    id="goalCareer" 
-                    placeholder="e.g. Full Stack Developer" 
+                  <Input
+                    id="goalCareer"
+                    placeholder="e.g. Full Stack Developer"
                     value={formData.goalCareer}
                     onChange={(e) => setFormData({ ...formData, goalCareer: e.target.value })}
                   />
@@ -180,7 +181,7 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
                 <ChevronLeft className="mr-2 w-4 h-4" /> Back
               </Button>
             ) : <div />}
-            
+
             {step < 3 ? (
               <Button onClick={nextStep} className="rounded-full px-6">
                 Next <ChevronRight className="ml-2 w-4 h-4" />

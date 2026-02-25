@@ -9,6 +9,7 @@ import { careerlyApi } from '@/lib/api'
 import { Rocket, Sparkles, Code2, Layers, Cpu, ArrowUpRight, Users, Trophy, Star, Plus, MoreHorizontal, CheckCircle2, Clock, PlayCircle } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
+import { handleAppError } from '@/lib/errors'
 import { ProjectRecommendation, ProjectRecommendationsResponse, UserProject, UserProjectStatus } from '@/types/roadmap'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -118,7 +119,7 @@ Return JSON in this format:
       setProjects(object.projects)
     } catch (error) {
       console.error('Error generating projects:', error)
-      toast.error('Failed to generate project recommendations.')
+      handleAppError({ error, context: 'ai.projects', errorCode: 'AI_GENERATE' })
     } finally {
       setGenerating(false)
     }
@@ -148,7 +149,7 @@ Return JSON in this format:
               try {
                 await linkGithub()
               } catch (e) {
-                toast.error("Connection failed: " + (e as Error).message)
+                handleAppError({ error: e, context: 'auth.link.github', errorCode: 'AUTH_LINK_ACCOUNT' })
               }
             }} className="w-full">
               Connect Now
@@ -207,7 +208,7 @@ Return JSON in this format:
               try {
                 await linkGithub()
               } catch (e) {
-                toast.error("Connection failed: " + (e as Error).message)
+                handleAppError({ error: e, context: 'auth.link.github', errorCode: 'AUTH_LINK_ACCOUNT' })
               }
             }} className="w-full">
               Connect Now
@@ -215,7 +216,7 @@ Return JSON in this format:
           </div>
         ), { duration: 6000 })
       } else {
-        toast.error(`Sync failed: ${err.message}`)
+        handleAppError({ error: err, context: 'db.projects.sync', errorCode: 'DB_SYNC' })
       }
     } finally {
       setGenerating(false)
@@ -237,7 +238,7 @@ Return JSON in this format:
       setActiveTab('board')
     } catch (e) {
       console.error(e)
-      toast.error("Failed to add project")
+      handleAppError({ error: e, context: 'db.projects.add', errorCode: 'DB_SAVE' })
     }
   }
 
@@ -248,7 +249,7 @@ Return JSON in this format:
       loadData()
     } catch (e) {
       console.error(e)
-      toast.error("Failed to update status")
+      handleAppError({ error: e, context: 'db.projects.update', errorCode: 'DB_SAVE' })
     }
   }
 
@@ -260,7 +261,7 @@ Return JSON in this format:
       loadData()
     } catch (e) {
       console.error(e)
-      toast.error("Failed to delete")
+      handleAppError({ error: e, context: 'db.projects.delete', errorCode: 'DB_DELETE' })
     }
   }
 

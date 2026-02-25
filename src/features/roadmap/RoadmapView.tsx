@@ -7,6 +7,7 @@ import { careerlyApi } from '@/lib/api'
 import { Sparkles, MapPin, ChevronRight, CheckCircle2, Clock, RotateCcw, Briefcase, GraduationCap, Trophy } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
+import { handleAppError } from '@/lib/errors'
 import { CareerRoadmapResponse, CareerPath, LearningStep } from '@/types/roadmap'
 
 export function RoadmapView() {
@@ -156,7 +157,7 @@ Return JSON in this exact format:
       toast.success('Roadmap generated!')
     } catch (error) {
       console.error('Error generating roadmap:', error)
-      toast.error('Failed to generate roadmap.')
+      handleAppError({ error, context: 'ai.roadmap', errorCode: 'AI_GENERATE' })
     } finally {
       setGenerating(false)
     }

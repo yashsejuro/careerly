@@ -7,6 +7,7 @@ import { careerlyApi } from '@/lib/api'
 import { Target, ArrowRight, BookOpen, ExternalLink, Sparkles, BrainCircuit, Rocket, CheckSquare } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
+import { handleAppError } from '@/lib/errors'
 import { SkillGapAnalysisResponse, MissingSkill } from '@/types/roadmap'
 import { getProviderToken, fetchGithubRepos } from '@/lib/integrations'
 import { Github, Linkedin } from 'lucide-react'
@@ -126,7 +127,7 @@ Return JSON in this exact format:
       toast.success('Skills analyzed!')
     } catch (error) {
       console.error('Error analyzing skills:', error)
-      toast.error('Failed to analyze skills.')
+      handleAppError({ error, context: 'ai.skills', errorCode: 'AI_GENERATE' })
     } finally {
       setAnalyzing(false)
     }
@@ -154,7 +155,7 @@ Return JSON in this exact format:
               try {
                 await linkGithub()
               } catch (e) {
-                toast.error("Connection failed: " + (e as Error).message)
+                handleAppError({ error: e, context: 'auth.link.github', errorCode: 'AUTH_LINK_ACCOUNT' })
               }
             }} className="w-full">
               Connect Now
@@ -217,7 +218,7 @@ Return JSON in this exact format:
               try {
                 await linkGithub()
               } catch (e) {
-                toast.error("Connection failed: " + (e as Error).message)
+                handleAppError({ error: e, context: 'auth.link.github', errorCode: 'AUTH_LINK_ACCOUNT' })
               }
             }} className="w-full">
               Connect Now
@@ -225,7 +226,7 @@ Return JSON in this exact format:
           </div>
         ), { duration: 6000 })
       } else {
-        toast.error(`Sync failed: ${err.message}`)
+        handleAppError({ error: err, context: 'db.skills.sync', errorCode: 'DB_SYNC' })
       }
     } finally {
       setAnalyzing(false)
@@ -253,7 +254,7 @@ Return JSON in this exact format:
             </Button>
           ) : (
             <Button onClick={async () => {
-              try { await linkGithub() } catch (e) { toast.error((e as Error).message) }
+              try { await linkGithub() } catch (e) { handleAppError({ error: e, context: 'auth.link.github', errorCode: 'AUTH_LINK_ACCOUNT' }) }
             }} size="lg" variant="outline" className="rounded-full px-8 gap-2">
               <Github className="w-4 h-4" /> Connect GitHub
             </Button>
@@ -270,9 +271,7 @@ Return JSON in this exact format:
               } catch (e) {
                 const msg = (e as Error).message
                 if (msg.includes('already linked') || msg.includes('registered')) {
-                  toast.error("LinkedIn account already linked to another user.")
-                } else {
-                  toast.error("Connection failed: " + msg)
+                  handleAppError({ error: e, context: 'auth.link.linkedin', errorCode: 'AUTH_LINK_ACCOUNT' })
                 }
               }
             }} size="lg" variant="outline" className="rounded-full px-8 gap-2">
@@ -301,7 +300,7 @@ Return JSON in this exact format:
               Sync
             </Button>
           ) : (
-            <Button variant="outline" size="sm" onClick={async () => { try { await linkGithub() } catch (e) { toast.error((e as Error).message) } }} className="gap-2 rounded-xl">
+            <Button variant="outline" size="sm" onClick={async () => { try { await linkGithub() } catch (e) { handleAppError({ error: e, context: 'auth.link.github', errorCode: 'AUTH_LINK_ACCOUNT' }) } }} className="gap-2 rounded-xl">
               <Github className="w-4 h-4" /> Connect
             </Button>
           )}
@@ -317,9 +316,7 @@ Return JSON in this exact format:
               } catch (e) {
                 const msg = (e as Error).message
                 if (msg.includes('already linked') || msg.includes('registered')) {
-                  toast.error("LinkedIn account already linked to another user.")
-                } else {
-                  toast.error("Connection failed: " + msg)
+                  handleAppError({ error: e, context: 'auth.link.linkedin', errorCode: 'AUTH_LINK_ACCOUNT' })
                 }
               }
             }} className="gap-2 rounded-xl hidden md:flex">

@@ -22,6 +22,7 @@ import {
   Linkedin
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { handleAppError } from '@/lib/errors'
 import { motion, useInView } from 'framer-motion'
 import { SEO } from '@/components/common/SEO'
 import Lenis from 'lenis'
@@ -123,7 +124,7 @@ export function LandingPage() {
       setEmail('')
     } catch (error) {
       console.error('Login error:', error)
-      toast.error('Failed to send login email')
+      handleAppError({ error, context: 'auth.email', errorCode: 'AUTH_SEND_LINK' })
     } finally {
       setIsLoading(false)
     }
@@ -136,7 +137,7 @@ export function LandingPage() {
       // User will be redirected to Google, no need for success toast
     } catch (error) {
       console.error('Google login error:', error)
-      toast.error('Failed to sign in with Google')
+      handleAppError({ error, context: 'auth.google', errorCode: 'AUTH_PROVIDER' })
       setIsLoading(false)
     }
   }
@@ -147,7 +148,7 @@ export function LandingPage() {
       await loginWithGithub()
     } catch (error) {
       console.error('GitHub login error:', error)
-      toast.error('Failed to sign in with GitHub')
+      handleAppError({ error, context: 'auth.github', errorCode: 'AUTH_PROVIDER' })
       setIsLoading(false)
     }
   }
@@ -158,7 +159,7 @@ export function LandingPage() {
       await loginWithLinkedin()
     } catch (error) {
       console.error('LinkedIn login error:', error)
-      toast.error('Failed to sign in with LinkedIn')
+      handleAppError({ error, context: 'auth.linkedin', errorCode: 'AUTH_PROVIDER' })
       setIsLoading(false)
     }
   }

@@ -10,6 +10,7 @@ import { careerlyApi } from '@/lib/api'
 import { Sparkles, ScanSearch, CheckCircle2, AlertCircle, Briefcase, ArrowRight } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
+import { handleAppError } from '@/lib/errors'
 import { motion } from 'framer-motion'
 
 interface JDAnalysisResponse {
@@ -77,7 +78,7 @@ export function JDAnalyzer() {
                 summary_verdict: "Good foundation, but you need more DevOps exposure.",
                 action_plan: ["Build a containerized app", "Deploy to AWS Free Tier", "Learn basic CI/CD"]
             })
-            toast.error("AI hiccups. Showing simulated result.")
+            handleAppError({ error: e, context: 'ai.jd-analyzer', errorCode: 'AI_GENERATE' })
         } finally {
             setLoading(false)
         }

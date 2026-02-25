@@ -31,17 +31,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Load initial session
   useEffect(() => {
     const init = async () => {
-      const { data } = await supabase.auth.getUser()
-      if (data.user) {
-        setUser({
-          id: data.user.id,
-          displayName: data.user.user_metadata.full_name || data.user.email || 'Student',
-          email: data.user.email ?? undefined,
-          imageUrl: data.user.user_metadata.avatar_url,
-          identities: data.user.identities?.map((i: any) => ({ provider: i.provider })),
-        })
+      try {
+        // Race auth check against a timeout to prevent infinite loading
+        // if Supabase is paused or unreachable
+        const timeoutPromise = new Promise<{ data: { user: null } }>((resolve) =>
+          setTimeout(() => {
+            console.warn('[CRL-AUTH-001] Auth initialization timed out')
+            resolve({ data: { user: null } })
+          }, 10000)
+        )
+
+        const { data } = await Promise.race([
+          supabase.auth.getUser(),
+          timeoutPromise,
+        ])
+
+        if (data.user) {
+          setUser({
+            id: data.user.id,
+            displayName: data.user.user_metadata.full_name || data.user.email || 'Student',
+            email: data.user.email ?? undefined,
+            imageUrl: data.user.user_metadata.avatar_url,
+            identities: data.user.identities?.map((i: any) => ({ provider: i.provider })),
+          })
+        }
+      } catch (error) {
+        console.error('Auth initialization failed:', error)
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
     init()
 

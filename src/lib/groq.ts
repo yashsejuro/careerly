@@ -1,5 +1,5 @@
 
-import toast from 'react-hot-toast'
+import { handleAppError } from './errors'
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY
 const API_URL = 'https://api.groq.com/openai/v1/chat/completions'
@@ -30,7 +30,7 @@ export async function generateWithGroq<T>(prompt: string, schema: any): Promise<
                 'Authorization': `Bearer ${GROQ_API_KEY}`
             },
             body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile', // Updated to latest stable model
+                model: 'llama-3.3-70b-versatile',
                 messages: [
                     {
                         role: 'system',
@@ -52,18 +52,17 @@ export async function generateWithGroq<T>(prompt: string, schema: any): Promise<
                         content: prompt
                     }
                 ],
-                temperature: 0.1, // Low temperature for consistent JSON
-                response_format: { type: 'json_object' } // Enforce JSON mode
+                temperature: 0.1,
+                response_format: { type: 'json_object' }
             })
         })
 
         if (!response.ok) {
             if (response.status === 429) {
-                throw new Error('Rate limit exceeded. Please try again in a moment.')
+                throw new Error('Rate limit exceeded')
             }
             const errData = await response.json().catch(() => ({}))
-            const errMsg = errData.error?.message || response.statusText || 'Unknown Error'
-            throw new Error(`Groq API Error: ${errMsg}`)
+            throw new Error(errData.error?.message || response.statusText || 'AI request failed')
         }
 
         const data: GroqResponse = await response.json()
@@ -76,13 +75,13 @@ export async function generateWithGroq<T>(prompt: string, schema: any): Promise<
         return JSON.parse(content) as T
 
     } catch (error: any) {
-        console.error('Groq AI Error:', error)
+        // Classify and show user-friendly error (no service names exposed)
         if (error.message.includes('Rate limit')) {
-            toast.error('AI is busy (Rate Limit). Using cached data.')
+            handleAppError({ error, context: 'ai.generate', errorCode: 'AI_RATE_LIMIT' })
         } else if (error.message.includes('Missing API Key')) {
-            toast.error('AI Key missing. Using demo data.')
+            handleAppError({ error, context: 'ai.generate', errorCode: 'AI_UNAVAILABLE' })
         } else {
-            toast.error(`AI Error: ${error.message.slice(0, 50)}... Using fallback.`)
+            handleAppError({ error, context: 'ai.generate', errorCode: 'AI_GENERATE' })
         }
         throw error
     }

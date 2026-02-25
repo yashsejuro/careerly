@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabaseClient'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
+import { handleAppError } from '@/lib/errors'
 
 export function AuthCallbackPage() {
     const navigate = useNavigate()
@@ -14,7 +15,7 @@ export function AuthCallbackPage() {
         const errorDescription = params.get('error_description')
         if (error) {
             console.error('Auth callback error from URL:', error, errorDescription)
-            toast.error(errorDescription || 'Authentication failed.')
+            handleAppError({ error: new Error(errorDescription || error), context: 'auth.callback', errorCode: 'AUTH_CALLBACK' })
             navigate('/')
             return
         }
@@ -31,7 +32,7 @@ export function AuthCallbackPage() {
         supabase.auth.getSession().then(({ data: { session }, error }) => {
             if (error) {
                 console.error('Error checking session:', error)
-                toast.error('Failed to verify session.')
+                handleAppError({ error, context: 'auth.session', errorCode: 'AUTH_SESSION' })
                 navigate('/')
             } else if (session) {
                 navigate('/')
