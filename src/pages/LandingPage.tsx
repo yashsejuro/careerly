@@ -19,11 +19,18 @@ import {
   BookOpen,
   Zap,
   Github,
-  Linkedin
+  Linkedin,
+  Sparkles,
+  ChevronRight,
+  Users,
+  BarChart3,
+  Star,
+  Brain,
+  MousePointerClick,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { handleAppError } from '@/lib/errors'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion'
 import { SEO } from '@/components/common/SEO'
 import Lenis from 'lenis'
 
@@ -57,7 +64,7 @@ function SectionReveal({ children, className = '', delay = 0 }: { children: Reac
 }
 
 // ── Cinematic Word-by-Word Text Reveal ──
-function RevealText({ text, highlightWord, className = '' }: { text: string; highlightWord?: string; className?: string }) {
+function RevealText({ text, highlightWords = [], className = '' }: { text: string; highlightWords?: string[]; className?: string }) {
   const ref = useRef<HTMLHeadingElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-50px' })
 
@@ -66,7 +73,7 @@ function RevealText({ text, highlightWord, className = '' }: { text: string; hig
   return (
     <h1 ref={ref} className={className}>
       {words.map((word, idx) => {
-        const isHighlight = highlightWord && word === highlightWord
+        const isHighlight = highlightWords.includes(word)
         return (
           <span key={idx} className="inline-block overflow-hidden mr-[0.22em] align-top">
             <motion.span
@@ -88,11 +95,184 @@ function RevealText({ text, highlightWord, className = '' }: { text: string; hig
   )
 }
 
+// ── Animated Number Counter ──
+function AnimatedCounter({ target, suffix = '', duration = 2 }: { target: number; suffix?: string; duration?: number }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const isInView = useInView(ref, { once: true })
+  const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    if (!isInView) return
+    let start = 0
+    const step = Math.ceil(target / (duration * 60))
+    const timer = setInterval(() => {
+      start += step
+      if (start >= target) {
+        setCount(target)
+        clearInterval(timer)
+      } else {
+        setCount(start)
+      }
+    }, 1000 / 60)
+    return () => clearInterval(timer)
+  }, [isInView, target, duration])
+
+  return <span ref={ref} className="stat-number">{count}{suffix}</span>
+}
+
+// ── Rotating Subtitle Words (Dynamic width) ──
+function RotatingWords() {
+  const words = ['Roadmaps', 'Skill Analysis', 'Project Ideas', 'Internship Tracking']
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [width, setWidth] = useState<number>(0)
+  const measureRef = useRef<HTMLSpanElement>(null)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % words.length)
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Measure the width of the current word
+  useEffect(() => {
+    if (measureRef.current) {
+      setWidth(measureRef.current.offsetWidth)
+    }
+  }, [currentIndex])
+
+  return (
+    <>
+      {/* Hidden measurer */}
+      <span
+        ref={measureRef}
+        className="gradient-text-animated font-bold whitespace-nowrap absolute opacity-0 pointer-events-none"
+        aria-hidden="true"
+        style={{ position: 'absolute', visibility: 'hidden' }}
+      >
+        {words[currentIndex]}
+      </span>
+      {/* Visible slot */}
+      <span
+        className="inline-block relative overflow-hidden align-bottom"
+        style={{ width: width > 0 ? width : 'auto', height: '1.2em', transition: 'width 0.3s ease' }}
+      >
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={words[currentIndex]}
+            className="absolute left-0 top-0 gradient-text-animated font-bold whitespace-nowrap"
+            initial={{ y: 28, opacity: 0, filter: 'blur(4px)' }}
+            animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
+            exit={{ y: -28, opacity: 0, filter: 'blur(4px)' }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {words[currentIndex]}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+    </>
+  )
+}
+
+// ── Interactive Magnetic Button ──
+function MagneticButton({ children, onClick, className = '' }: { children: React.ReactNode; onClick?: () => void; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const springX = useSpring(x, { stiffness: 200, damping: 20 })
+  const springY = useSpring(y, { stiffness: 200, damping: 20 })
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!ref.current) return
+    const rect = ref.current.getBoundingClientRect()
+    const centerX = rect.left + rect.width / 2
+    const centerY = rect.top + rect.height / 2
+    x.set((e.clientX - centerX) * 0.2)
+    y.set((e.clientY - centerY) * 0.2)
+  }
+
+  const handleMouseLeave = () => {
+    x.set(0)
+    y.set(0)
+  }
+
+  return (
+    <motion.div
+      ref={ref}
+      style={{ x: springX, y: springY }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      whileTap={{ scale: 0.95 }}
+      className={className}
+    >
+      <Button
+        onClick={onClick}
+        size="lg"
+        className="h-14 px-10 text-lg rounded-full shadow-lg glow-primary-hover animate-pulse-ring relative overflow-hidden group"
+      >
+        <span className="relative z-10 flex items-center gap-2">
+          {children}
+        </span>
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-primary via-emerald-400 to-primary bg-[length:200%_100%]"
+          animate={{ backgroundPosition: ['0% 0%', '200% 0%'] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+          style={{ opacity: 0.15 }}
+        />
+      </Button>
+    </motion.div>
+  )
+}
+
+// ── How-it-works Step ──
+function StepItem({ step, title, desc, icon: Icon, index }: { step: number; title: string; desc: string; icon: any; index: number }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const isInView = useInView(ref, { once: true, margin: '-60px' })
+
+  return (
+    <motion.div
+      ref={ref}
+      className="flex flex-col items-center text-center relative"
+      initial={{ opacity: 0, y: 40 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ delay: index * 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <motion.div
+        className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4 relative"
+        whileHover={{ scale: 1.1, rotate: 5, borderColor: 'rgba(0,191,165,0.5)' }}
+        transition={{ type: 'spring', stiffness: 300 }}
+      >
+        <Icon className="w-7 h-7 text-primary" />
+        <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shadow-md">
+          {step}
+        </span>
+      </motion.div>
+      <h3 className="text-lg font-bold mb-1">{title}</h3>
+      <p className="text-sm text-muted-foreground max-w-[200px] leading-relaxed">{desc}</p>
+    </motion.div>
+  )
+}
+
 export function LandingPage() {
   const { loginWithEmail, loginWithGoogle, loginWithGithub, loginWithLinkedin } = useAuth()
   const [isLoginOpen, setIsLoginOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const heroRef = useRef<HTMLDivElement>(null)
+
+  // ── Parallax mouse tracking for hero ──
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+  const smoothX = useSpring(mouseX, { stiffness: 50, damping: 30 })
+  const smoothY = useSpring(mouseY, { stiffness: 50, damping: 30 })
+  const parallaxX = useTransform(smoothX, [-500, 500], [-15, 15])
+  const parallaxY = useTransform(smoothY, [-500, 500], [-15, 15])
+
+  const handleHeroMouseMove = (e: React.MouseEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    mouseX.set(e.clientX - rect.left - rect.width / 2)
+    mouseY.set(e.clientY - rect.top - rect.height / 2)
+  }
 
   // ── Lenis Smooth Scroll ──
   useEffect(() => {
@@ -134,7 +314,6 @@ export function LandingPage() {
     setIsLoading(true)
     try {
       await loginWithGoogle()
-      // User will be redirected to Google, no need for success toast
     } catch (error) {
       console.error('Google login error:', error)
       handleAppError({ error, context: 'auth.google', errorCode: 'AUTH_PROVIDER' })
@@ -169,10 +348,10 @@ export function LandingPage() {
       <SEO
         title="Home"
         description="Careerly helps students navigate their career path with confidence through personalized roadmaps, skill gap analysis, and internship tracking."
-        url="https://careerly.ai"
+        url="https://careerly-pi.vercel.app/"
       />
-      {/* Navigation */}
 
+      {/* ── Navigation ── */}
       <motion.nav
         className="border-b bg-background/50 backdrop-blur-md sticky top-0 z-50"
         initial={{ y: -100 }}
@@ -190,142 +369,301 @@ export function LandingPage() {
             </motion.div>
             <span className="text-xl font-serif font-bold tracking-tight">Careerly</span>
           </div>
-          <Button onClick={() => setIsLoginOpen(true)} variant="ghost" className="font-medium">
-            Sign In
-          </Button>
+          <div className="flex items-center gap-3">
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button onClick={() => setIsLoginOpen(true)} variant="ghost" className="font-medium">
+                Sign In
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button onClick={() => setIsLoginOpen(true)} size="sm" className="rounded-full px-5 shadow-md hidden sm:flex">
+                Get Started <ArrowRight className="ml-1 w-4 h-4" />
+              </Button>
+            </motion.div>
+          </div>
         </div>
       </motion.nav>
 
-      {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
+      {/* ── Hero Section ── */}
+      <section
+        ref={heroRef}
+        className="relative py-24 lg:py-36 overflow-hidden"
+        onMouseMove={handleHeroMouseMove}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-3xl mx-auto">
-            <RevealText
-              text="Navigate Your Career Path with Confidence"
-              highlightWord="Confidence"
-              className="text-5xl lg:text-7xl font-serif font-bold leading-tight mb-6"
-            />
-            <motion.p
-              className="text-xl text-muted-foreground mb-10 leading-relaxed"
-              initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              transition={{ delay: 0.8, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            >
-              Discover personalized roadmaps, analyze skill gaps, and track internships.
-              Empowering college students to reach their full professional potential.
-            </motion.p>
+          <div className="text-center max-w-4xl mx-auto">
+
+            {/* Animated Badge */}
             <motion.div
-              className="flex flex-col sm:flex-row gap-4 justify-center"
-              initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              transition={{ delay: 1.0, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 mb-8"
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+              whileHover={{ scale: 1.05, borderColor: 'rgba(0,191,165,0.4)' }}
             >
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+                className="w-2 h-2 rounded-full bg-primary"
+                animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              />
+              <span className="text-xs font-semibold text-primary tracking-wide uppercase">AI-Powered Career Platform</span>
+              <Sparkles className="w-3 h-3 text-primary" />
+            </motion.div>
+
+            {/* Hero Headline */}
+            <RevealText
+              text="Your Career Starts Here — Own Every Step."
+              highlightWords={['Here', 'Every']}
+              className="text-5xl sm:text-6xl lg:text-7xl font-serif font-bold leading-[1.1] mb-6"
+            />
+
+            {/* Rotating subtitle */}
+            <motion.p
+              className="text-xl sm:text-2xl text-muted-foreground mb-10 leading-relaxed"
+              initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              transition={{ delay: 0.9, duration: 2.78, ease: [0.22, 1, 0.36, 1] }}
+            >
+              AI-powered <RotatingWords /> for college students<br className="hidden sm:block" />
+              who refuse to leave their future to chance.
+            </motion.p>
+
+            {/* CTA Buttons */}
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+              initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              transition={{ delay: 1.3, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <MagneticButton onClick={() => setIsLoginOpen(true)}>
+                Start Free — No Credit Card <ArrowRight className="w-5 h-5" />
+              </MagneticButton>
+
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
                 <Button
-                  onClick={() => setIsLoginOpen(true)}
+                  variant="ghost"
                   size="lg"
-                  className="h-14 px-8 text-lg rounded-full shadow-lg glow-primary-hover"
+                  className="h-14 px-8 text-lg rounded-full border border-border/50 gap-2 group"
+                  onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
                 >
-                  Get Started for Free <ArrowRight className="ml-2 w-5 h-5" />
+                  See How It Works
+                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </motion.div>
+            </motion.div>
+
+            {/* Social proof micro-line */}
+            <motion.div
+              className="flex items-center justify-center gap-4 mt-8 text-sm text-muted-foreground"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.8, duration: 0.6 }}
+            >
+              <div className="flex -space-x-2">
+                {['🎓', '💻', '🚀', '🎯'].map((emoji, i) => (
+                  <motion.div
+                    key={i}
+                    className="w-8 h-8 rounded-full bg-secondary border-2 border-background flex items-center justify-center text-xs"
+                    initial={{ scale: 0, x: -10 }}
+                    animate={{ scale: 1, x: 0 }}
+                    transition={{ delay: 1.8 + i * 0.1, type: 'spring', stiffness: 300 }}
+                  >
+                    {emoji}
+                  </motion.div>
+                ))}
+              </div>
+              <span>Join students already navigating smarter</span>
             </motion.div>
           </div>
         </div>
 
-        {/* Floating Icons */}
-        <FloatingIcons />
+        {/* Floating Icons — parallax-linked */}
+        <motion.div
+          style={{ x: parallaxX, y: parallaxY }}
+          className="absolute inset-0 pointer-events-none"
+        >
+          <FloatingIcons />
+        </motion.div>
 
         {/* Animated Background Blobs */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full -z-10 opacity-10">
           <motion.div
             className="absolute top-0 left-0 w-96 h-96 bg-primary rounded-full blur-3xl"
-            animate={{
-              x: [0, 100, 0],
-              y: [0, 50, 0],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+            animate={{ x: [0, 100, 0], y: [0, 50, 0], scale: [1, 1.2, 1] }}
+            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
             className="absolute bottom-0 right-0 w-96 h-96 bg-primary rounded-full blur-3xl"
-            animate={{
-              x: [0, -100, 0],
-              y: [0, -50, 0],
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              duration: 15,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+            animate={{ x: [0, -100, 0], y: [0, -50, 0], scale: [1, 1.1, 1] }}
+            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
             className="absolute top-1/2 left-1/2 w-64 h-64 bg-accent rounded-full blur-3xl"
-            animate={{
-              x: [-50, 50, -50],
-              y: [-50, 50, -50],
-              scale: [0.8, 1.2, 0.8],
-            }}
-            transition={{
-              duration: 18,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
+            animate={{ x: [-50, 50, -50], y: [-50, 50, -50], scale: [0.8, 1.2, 0.8] }}
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
           />
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="relative py-24 bg-secondary/30 overflow-hidden">
+      {/* ── Stats Bar ── */}
+      <SectionReveal>
+        <section className="border-y bg-secondary/20">
+          {(() => {
+            const stats = [
+              { value: 50, suffix: '+', label: 'Early Users', icon: Users },
+              { value: 4, suffix: '', label: 'AI-Powered Tools', icon: Brain },
+              { value: 95, suffix: '%', label: 'Accuracy Rate', icon: BarChart3 },
+              { value: 4.9, suffix: '★', label: 'User Rating', icon: Star },
+            ]
+
+            return (
+              <div
+                className="max-w-5xl mx-auto px-4 py-10 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
+              >
+                <div className="flex w-max gap-10 pr-10 animate-marquee">
+                  {[...stats, ...stats].map((stat, i) => (
+                    <motion.div
+                      key={`${stat.label}-${i}`}
+                      className="flex flex-col items-center gap-2 group cursor-default text-center min-w-[9.5rem]"
+                      whileHover={{ scale: 1.05, y: -3 }}
+                      transition={{ type: 'spring', stiffness: 300 }}
+                    >
+                      <stat.icon className="w-5 h-5 text-primary opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <span className="text-3xl lg:text-4xl font-bold text-foreground">
+                        <AnimatedCounter target={stat.value} suffix={stat.suffix} />
+                      </span>
+                      <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
+        </section>
+      </SectionReveal>
+
+      {/* ── How It Works ── */}
+      <section className="py-24 relative overflow-hidden">
+        <SectionReveal>
+          <div className="max-w-5xl mx-auto px-4">
+            <div className="text-center mb-16">
+              <motion.span
+                className="inline-block text-xs font-bold uppercase tracking-widest text-primary mb-3"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                Simple & Effective
+              </motion.span>
+              <h2 className="text-4xl font-serif font-bold mb-4">Three Steps to Career Clarity</h2>
+              <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+                From confusion to confidence in minutes, not months.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+              {/* Connector lines (desktop only) */}
+              <div className="hidden md:block absolute top-8 left-[calc(16.67%+32px)] right-[calc(16.67%+32px)] h-0.5 bg-gradient-to-r from-primary/30 via-primary to-primary/30" />
+
+              <StepItem step={1} title="Build Your Profile" desc="Tell us your degree, skills & dream career in under 2 minutes." icon={GraduationCap} index={0} />
+              <StepItem step={2} title="Get AI Insights" desc="Receive a personalized roadmap, skill gaps, and project ideas." icon={Brain} index={1} />
+              <StepItem step={3} title="Track & Execute" desc="Manage applications, build projects, and watch your progress." icon={Rocket} index={2} />
+            </div>
+          </div>
+        </SectionReveal>
+      </section>
+
+      {/* ── Features Grid (Bento-style) ── */}
+      <section id="features" className="relative py-24 bg-secondary/30 overflow-hidden">
         <SectionReveal>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-serif font-bold mb-4">Core MVP Features</h2>
-              <p className="text-muted-foreground text-lg">Everything you need to jumpstart your career journey.</p>
+              <motion.span
+                className="inline-block text-xs font-bold uppercase tracking-widest text-primary mb-3"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                Everything You Need
+              </motion.span>
+              <h2 className="text-4xl font-serif font-bold mb-4">Powerful Features, Zero Complexity</h2>
+              <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+                Built specifically for students who want to take control of their career journey.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <FeatureCard
                 icon={<Compass className="w-8 h-8 text-primary" />}
                 title="Career Roadmaps"
                 description="AI-generated step-by-step guides tailored to your specific career goals and degree."
                 index={0}
+                emoji="🗺️"
               />
               <FeatureCard
                 icon={<Target className="w-8 h-8 text-primary" />}
                 title="Skill Gap Analysis"
                 description="Identify exactly what skills you're missing for your dream job and how to bridge them."
                 index={1}
+                emoji="🎯"
               />
               <FeatureCard
                 icon={<Rocket className="w-8 h-8 text-primary" />}
                 title="Project Ideas"
                 description="Receive personalized project recommendations to build a portfolio that stands out."
                 index={2}
+                emoji="🚀"
               />
               <FeatureCard
                 icon={<ClipboardCheck className="w-8 h-8 text-primary" />}
                 title="Internship Tracker"
                 description="Manage all your internship applications in one intuitive, organized dashboard."
                 index={3}
+                emoji="📋"
               />
             </div>
           </div>
         </SectionReveal>
 
-        {/* Floating Icons for Features Section */}
         <FloatingIcons />
       </section>
 
-      {/* Email Login Dialog */}
+      {/* ── Final CTA ── */}
+      <section className="py-28 relative overflow-hidden">
+        <SectionReveal>
+          <div className="max-w-3xl mx-auto px-4 text-center relative z-10">
+            <motion.div
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 mb-6"
+              whileHover={{ scale: 1.05 }}
+            >
+              <MousePointerClick className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-semibold text-primary">Ready to Start?</span>
+            </motion.div>
+            <h2 className="text-4xl sm:text-5xl font-serif font-bold mb-4">
+              Your Dream Career Won't<br />
+              <span className="gradient-text-animated">Build Itself.</span>
+            </h2>
+            <p className="text-lg text-muted-foreground mb-10 max-w-lg mx-auto">
+              Join students who stopped guessing and started growing.
+              It's free, and takes less than 2 minutes.
+            </p>
+            <MagneticButton onClick={() => setIsLoginOpen(true)} className="mx-auto inline-block">
+              Get Started — It's Free <Sparkles className="w-5 h-5" />
+            </MagneticButton>
+          </div>
+        </SectionReveal>
+
+        {/* Background glow */}
+        <div className="absolute inset-0 -z-10 opacity-10">
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary rounded-full blur-[120px]"
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        </div>
+      </section>
+
+      {/* ── Email Login Dialog ── */}
       <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
         <DialogContent className="rounded-3xl max-w-md">
           <DialogHeader>
@@ -335,7 +673,6 @@ export function LandingPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            {/* Google Sign-In Button */}
             <Button
               onClick={handleGoogleLogin}
               disabled={isLoading}
@@ -352,37 +689,21 @@ export function LandingPage() {
             </Button>
 
             <div className="flex gap-4">
-              <Button
-                onClick={handleGithubLogin}
-                disabled={isLoading}
-                variant="outline"
-                className="w-full rounded-xl h-11 flex items-center justify-center gap-2"
-              >
-                <Github className="w-5 h-5" />
-                GitHub
+              <Button onClick={handleGithubLogin} disabled={isLoading} variant="outline" className="w-full rounded-xl h-11 flex items-center justify-center gap-2">
+                <Github className="w-5 h-5" /> GitHub
               </Button>
-              <Button
-                onClick={handleLinkedinLogin}
-                disabled={isLoading}
-                variant="outline"
-                className="w-full rounded-xl h-11 flex items-center justify-center gap-2"
-              >
-                <Linkedin className="w-5 h-5 text-[#0077b5]" />
-                LinkedIn
+              <Button onClick={handleLinkedinLogin} disabled={isLoading} variant="outline" className="w-full rounded-xl h-11 flex items-center justify-center gap-2">
+                <Linkedin className="w-5 h-5 text-[#0077b5]" /> LinkedIn
               </Button>
             </div>
 
-            {/* Divider */}
             <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
               </div>
             </div>
 
-            {/* Email Input */}
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
               <Input
@@ -404,17 +725,41 @@ export function LandingPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Footer */}
+      {/* ── Footer ── */}
       <footer className="py-12 border-t">
         <SectionReveal>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
               <Compass className="text-primary w-6 h-6" />
-              <span className="text-lg font-serif font-bold">Career Navigator</span>
+              <span className="text-lg font-serif font-bold">Careerly</span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              © 2026 Careerly. Built for the next generation of professionals.
-            </p>
+
+            <div className="flex flex-col items-center md:items-end gap-2">
+              <p className="text-sm text-muted-foreground">
+                Developed by <span className="font-medium text-foreground">Yash Divate</span>
+              </p>
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://linkedin.com/in/yash-divate"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl border bg-background px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-secondary/40 transition-colors"
+                >
+                  <Linkedin className="w-4 h-4 text-[#0077b5]" />
+                  LinkedIn
+                </a>
+                <a
+                  href="https://github.com/yashsejuro"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl border bg-background px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-primary/30 hover:bg-secondary/40 transition-colors"
+                >
+                  <Github className="w-4 h-4" />
+                  GitHub
+                </a>
+              </div>
+              <p className="text-xs text-muted-foreground">© 2026 Careerly. Built for the next generation of professionals.</p>
+            </div>
           </div>
         </SectionReveal>
       </footer>
@@ -422,10 +767,14 @@ export function LandingPage() {
   )
 }
 
-function FeatureCard({ icon, title, description, index = 0 }: { icon: React.ReactNode, title: string, description: string, index?: number }) {
+// Default export for lazy loading
+export default LandingPage
+
+// ── Feature Card with Interactive Hover ──
+function FeatureCard({ icon, title, description, index = 0, emoji }: { icon: React.ReactNode; title: string; description: string; index?: number; emoji?: string }) {
   return (
     <motion.div
-      className="glass-card p-8 rounded-3xl border border-primary/10 shadow-sm group cursor-pointer"
+      className="glass-card p-8 rounded-3xl border border-primary/10 shadow-sm group cursor-pointer relative overflow-hidden"
       initial={{ opacity: 0, y: 50, filter: 'blur(8px)' }}
       whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
       viewport={{ once: true, margin: "-80px" }}
@@ -436,6 +785,16 @@ function FeatureCard({ icon, title, description, index = 0 }: { icon: React.Reac
         transition: { type: "spring", stiffness: 300, damping: 20 }
       }}
     >
+      {/* Background emoji on hover */}
+      {emoji && (
+        <motion.span
+          className="absolute -right-4 -bottom-4 text-[80px] opacity-0 group-hover:opacity-[0.08] transition-opacity duration-500 select-none pointer-events-none"
+          aria-hidden
+        >
+          {emoji}
+        </motion.span>
+      )}
+
       <motion.div
         className="mb-6"
         whileHover={{ scale: 1.1, rotate: 5 }}
@@ -445,10 +804,18 @@ function FeatureCard({ icon, title, description, index = 0 }: { icon: React.Reac
       </motion.div>
       <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">{title}</h3>
       <p className="text-muted-foreground leading-relaxed">{description}</p>
+
+      {/* Micro interaction: reveal arrow on hover */}
+      <motion.div
+        className="mt-4 flex items-center gap-1 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        Learn more <ArrowRight className="w-3.5 h-3.5" />
+      </motion.div>
     </motion.div>
   )
 }
 
+// ── Floating Background Icons ──
 function FloatingIcons() {
   const icons = [
     { Icon: Briefcase, delay: 0, duration: 20, x: '10%', y: '20%' },
@@ -468,22 +835,22 @@ function FloatingIcons() {
           key={index}
           className="absolute"
           style={{ left: x, top: y }}
-          initial={{ opacity: 0, scale: 0 }}
+          initial={{ opacity: 0, scale: 0.6 }}
           animate={{
-            opacity: [0, 0.15, 0.15, 0],
-            scale: [0, 1, 1, 0],
-            y: [0, -30, -60, -90],
-            x: [0, Math.sin(index) * 20, Math.cos(index) * 20, 0],
-            rotate: [0, 360],
+            opacity: [0, 0.35, 0.3, 0],
+            scale: [0.6, 1.15, 1.05, 0.6],
+            y: [0, -15, -35, -60],
+            x: [0, Math.sin(index) * 12, Math.cos(index) * 12, 0],
+            rotate: [0, 120],
           }}
           transition={{
-            duration,
+            duration: duration * 0.6,
             delay,
             repeat: Infinity,
             ease: "easeInOut"
           }}
         >
-          <Icon className="w-12 h-12 text-primary" strokeWidth={1.5} />
+          <Icon className="w-14 h-14 text-primary" strokeWidth={1.2} />
         </motion.div>
       ))}
     </div>

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { Spinner } from './components/ui/spinner'
 import { useAuth } from './lib/auth'
@@ -6,15 +6,54 @@ import { supabase } from './lib/supabaseClient'
 import { ErrorBoundary } from 'react-error-boundary'
 import { SpeedInsights } from "@vercel/speed-insights/react"
 import { Analytics } from "@vercel/analytics/react"
+import { Button } from './components/ui/button'
 
 // Lazy load pages for better performance
-const LandingPage = lazy(() => import('./pages/LandingPage').then(module => ({ default: module.LandingPage })))
+const LandingPage = lazy(() => import('./pages/LandingPage'))
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage').then(module => ({ default: module.OnboardingPage })))
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(module => ({ default: module.DashboardPage })))
 const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage').then(module => ({ default: module.AuthCallbackPage })))
-const NotFoundPage = lazy(() => import('./pages/ErrorPages')) // Default export
-const ErrorBoundaryPage = lazy(() => import('./pages/ErrorPages').then(module => ({ default: module.ErrorBoundaryPage })))
 const CareerRoadmapBlog = lazy(() => import('./pages/CareerRoadmapBlog'))
+
+function ErrorBoundaryPage({ error, resetErrorBoundary }: { error: any; resetErrorBoundary: () => void }) {
+  return (
+    <div className="h-screen w-full flex flex-col items-center justify-center bg-background p-4 text-center">
+      <div className="space-y-6 max-w-md">
+        <h1 className="text-2xl font-semibold tracking-tight text-destructive">Something went wrong</h1>
+        <p className="text-muted-foreground text-sm">An unexpected error occurred. Please try again.</p>
+        {import.meta.env.DEV && error?.message && (
+          <div className="p-4 bg-muted/50 rounded-lg text-left overflow-auto max-h-40 text-xs font-mono">
+            {String(error.message)}
+          </div>
+        )}
+        <div className="pt-4">
+          <Button onClick={resetErrorBoundary} variant="outline" className="gap-2">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function NotFoundPage() {
+  const navigate = useNavigate()
+
+  return (
+    <div className="h-screen w-full flex flex-col items-center justify-center bg-background p-4 text-center">
+      <div className="space-y-6 max-w-md">
+        <div className="text-6xl font-bold">404</div>
+        <h1 className="text-2xl font-semibold tracking-tight">Page not found</h1>
+        <p className="text-muted-foreground text-sm">Sorry, we couldn’t find the page you’re looking for.</p>
+        <div className="pt-4">
+          <Button onClick={() => navigate('/')} className="gap-2">
+            Return Home
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function MainApp() {
   const { isAuthenticated, isLoading, user } = useAuth()
@@ -86,8 +125,7 @@ export default function App() {
           <Route path="/blog/career-roadmap-for-college-students" element={<CareerRoadmapBlog />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/" element={<MainApp />} />
-          {/* Redirect any unknown routes (like the broken LinkedIn link) to Home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
       <SpeedInsights />
