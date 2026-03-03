@@ -9,7 +9,7 @@ import { Analytics } from "@vercel/analytics/react"
 import { Button } from './components/ui/button'
 
 // Lazy load pages for better performance
-const LandingPage = lazy(() => import('./pages/LandingPage'))
+const LandingPage = lazy(() => import('./pages/LandingPage').then(module => ({ default: module.LandingPage })))
 const OnboardingPage = lazy(() => import('./pages/OnboardingPage').then(module => ({ default: module.OnboardingPage })))
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then(module => ({ default: module.DashboardPage })))
 const AuthCallbackPage = lazy(() => import('./pages/AuthCallbackPage').then(module => ({ default: module.AuthCallbackPage })))
