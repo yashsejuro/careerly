@@ -208,7 +208,8 @@ Return JSON:
               <div className="pt-6 border-t border-border/40">
                 <div className="flex items-center justify-between mb-4">
                   <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/80">Skill Stack</Label>
-                  <span className="text-[10px] text-muted-foreground hover:text-primary cursor-pointer">Edit Skills</span>
+                  <button onClick={() => setActiveView('skills')}
+                    className="text-[10px] text-muted-foreground hover:text-primary cursor-pointer">Edit Skills</button>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {profile?.skills.split(',').map((skill: string, i: number) => (
