@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react'
+import { EditSkillsDialog } from '@/components/EditSkillsDialog'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth'
@@ -71,6 +72,7 @@ export function Overview({ setActiveView }: { setActiveView: (view: any) => void
   const { profile, internshipCount } = useDashboard()
   const [overview, setOverview] = useState<ProfileOverviewResponse | null>(null)
   const [loading, setLoading] = useState(false)
+  const [editSkillsOpen, setEditSkillsOpen] = useState(false)
 
   useEffect(() => {
     async function fetchOverview() {
@@ -208,15 +210,15 @@ Return JSON:
               <div className="pt-6 border-t border-border/40">
                 <div className="flex items-center justify-between mb-4">
                   <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/80">Skill Stack</Label>
-                  <button onClick={() => setActiveView('skills')}
-                    className="text-[10px] text-muted-foreground hover:text-primary cursor-pointer">Edit Skills</button>
+                  <button onClick={() => setEditSkillsOpen(true)}
+                    className="text-[10px] text-muted-foreground hover:text-primary cursor-pointer transition-colors">Edit Skills</button>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {profile?.skills.split(',').map((skill: string, i: number) => (
                     <Badge
                       key={i}
                       variant="secondary"
-                      className="px-3 py-1 bg-secondary/50 hover:bg-secondary text-secondary-foreground border border-border/30 rounded-md text-[11px] font-medium transition-colors cursor-none"
+                      className="px-3 py-1 bg-secondary/50 hover:bg-secondary text-secondary-foreground border border-border/30 rounded-md text-[11px] font-medium transition-colors cursor-default"
                     >
                       {skill.trim()}
                     </Badge>
@@ -308,6 +310,9 @@ Return JSON:
           </Card>
         </motion.div>
       </div>
+
+      {/* Edit Skills Dialog */}
+      <EditSkillsDialog open={editSkillsOpen} onOpenChange={setEditSkillsOpen} />
     </motion.div>
   )
 }

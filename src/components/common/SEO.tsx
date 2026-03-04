@@ -14,7 +14,7 @@ export function SEO({
     description = "Navigate your career path with confidence. Discover personalized roadmaps, analyze skill gaps, and track internships.",
     keywords = ["career", "roadmap", "internshpis", "skill gap", "students", "professional development"],
     image = "/og-image.png", // We should make sure this image exists or use a default one
-    url = "https://careerly.ai", // Replace with actual domain
+    url = "https://careerly-pi.vercel.app", // Replace with actual domain
     type = "website",
 }: SEOProps) {
     const siteTitle = "Careerly | Navigate Your Future";

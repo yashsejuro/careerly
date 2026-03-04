@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth'
 import { careerlyApi } from '@/lib/api'
-import { Target, ArrowRight, BookOpen, ExternalLink, Sparkles, BrainCircuit, Rocket, CheckSquare } from 'lucide-react'
+import { Target, ArrowRight, BookOpen, ExternalLink, Sparkles, BrainCircuit, Rocket, CheckSquare, Pencil } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import toast from 'react-hot-toast'
 import { handleAppError } from '@/lib/errors'
 import { SkillGapAnalysisResponse, MissingSkill } from '@/types/roadmap'
 import { getProviderToken, fetchGithubRepos } from '@/lib/integrations'
 import { Github, Linkedin } from 'lucide-react'
+import { EditSkillsDialog } from '@/components/EditSkillsDialog'
 
 export function SkillsView() {
   const { user, linkGithub, linkLinkedin } = useAuth()
@@ -18,6 +19,7 @@ export function SkillsView() {
   const [currentSkills, setCurrentSkills] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [analyzing, setAnalyzing] = useState(false)
+  const [editSkillsOpen, setEditSkillsOpen] = useState(false)
 
   useEffect(() => {
     async function fetchAnalysis() {
@@ -339,7 +341,18 @@ Return JSON in this exact format:
               <BrainCircuit className="w-5 h-5 text-primary" />
               Your Strengths
             </CardTitle>
-            <CardDescription>Based on your profile.</CardDescription>
+            <div className="flex items-center justify-between">
+              <CardDescription>Based on your profile.</CardDescription>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setEditSkillsOpen(true)}
+                className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-primary rounded-lg -mr-2"
+              >
+                <Pencil className="w-3 h-3" />
+                Edit
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
@@ -396,6 +409,19 @@ Return JSON in this exact format:
           </div>
         </div>
       </div>
+
+      {/* Edit Skills Dialog */}
+      <EditSkillsDialog open={editSkillsOpen} onOpenChange={(open) => {
+        setEditSkillsOpen(open)
+        if (!open && user) {
+          // Refresh current skills when dialog closes
+          careerlyApi.db.profiles.list({ where: { userId: user.id }, limit: 1 }).then(profiles => {
+            if (profiles.length > 0) {
+              setCurrentSkills(profiles[0].skills.split(',').map((s: string) => s.trim()))
+            }
+          })
+        }
+      }} />
     </div>
   )
 }
