@@ -7,13 +7,12 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Active-success" />
-  <img src="https://img.shields.io/badge/Next.js-000?logo=nextdotjs" />
-  <img src="https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white" />
+  <img src="https://img.shields.io/badge/Next.js-000" />
+  <img src="https://img.shields.io/badge/MongoDB-47A248" />
   <img src="https://img.shields.io/badge/AI-Gemini-blue" />
 </p>
 
 ---
-### LIVE NOW: https://careerly-pi.vercel.app/
 
 ## 🧠 Problem
 
